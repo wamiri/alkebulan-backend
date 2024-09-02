@@ -49,7 +49,7 @@ class TabularDataWorkflow(Workflow):
 
 
 async def main():
-    documents = SimpleDirectoryReader("./datasets").load_data()
+    documents = SimpleDirectoryReader("./data").load_data()
     workflow = TabularDataWorkflow()
     result = await workflow.run(documents=documents)
     print(result)
