@@ -2,35 +2,53 @@ import os
 
 import streamlit as st
 
-from unstructured_file_processor import run_pipeline
-
-uploaded_files = st.file_uploader(
-    label="Upload your tabular file i.e. CSV, TSV, XLS, XLSX",
-    accept_multiple_files=True,
-    type=["csv", "tsv", "xls", "xlsx"],
-)
-
-unstructured_file_formats = ["xls", "xlsx"]
-get_file_extension = lambda filename: filename.split(".")[-1]
+from utils.file_readers import read_file
+from utils.file_uploaders import upload_file
 
 
-def delete_files_from_folder(folder="unstructured"):
-    for file in os.listdir(folder):
-        os.unlink(os.path.join(folder, file))
+def upload_tab():
+    st.header("Upload")
+    uploaded_files = st.file_uploader(
+        label="Upload your file(s)",
+        accept_multiple_files=True,
+    )
+
+    for uploaded_file in uploaded_files:
+        bytes_data = uploaded_file.read()
+        filename, file_extension = upload_file(bytes_data, uploaded_file.name)
+        st.write(f"{filename}{file_extension} uploaded")
 
 
-for uploaded_file in uploaded_files:
-    bytes_data = uploaded_file.read()
-    file_extension = get_file_extension(uploaded_file.name)
+def chat_tab():
+    st.header("Chat")
 
-    if file_extension in unstructured_file_formats:
-        with open(f"unstructured/{uploaded_file.name}", "wb") as f:
-            f.write(bytes_data)
-        run_pipeline()
-        delete_files_from_folder()
+    if "messages" not in st.session_state:
+        st.session_state.messages = []
 
-    else:
-        with open(f"upload/{uploaded_file.name}", "wb") as f:
-            f.write(bytes_data)
+    for message in st.session_state.messages:
+        with st.chat_message(message["role"]):
+            st.markdown(message["content"])
 
-    st.write(f"{uploaded_file.name} uploaded")
+    if prompt := st.chat_input("What is your question?"):
+        st.chat_message("user").markdown(prompt)
+        st.session_state.messages.append({"role": "user", "content": prompt})
+        response = f"Echo: {prompt}"
+
+        with st.chat_message("assistant"):
+            st.markdown(response)
+        st.session_state.messages.append({"role": "assistant", "content": response})
+
+
+def main():
+    st.title("RAG Pipeline")
+    tab1, tab2 = st.tabs(["File Upload", "Chat"])
+
+    with tab1:
+        upload_tab()
+
+    with tab2:
+        chat_tab()
+
+
+if __name__ == "__main__":
+    main()
