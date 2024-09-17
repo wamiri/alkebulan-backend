@@ -13,8 +13,8 @@ from llama_index.readers.json import JSONReader
 
 load_dotenv()
 
-DATA_DIR = os.getenv("DATA_DIR")
-UNSTRUCTURED_DIR = os.getenv("UNSTRUCTURED_DIR")
+DATA_DIR = "../data"
+UNSTRUCTURED_DIR = "../unstructured"
 
 
 file_readers = {

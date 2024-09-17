@@ -7,8 +7,8 @@ from utils.unstructured_file_processor import run_pipeline
 load_dotenv()
 
 UNSTRUCTURED_FILE_FORMATS = [".xls", ".xlsx"]
-DATA_DIR = os.getenv("DATA_DIR")
-UNSTRUCTURED_DIR = os.getenv("UNSTRUCTURED_DIR")
+DATA_DIR = "data"
+UNSTRUCTURED_DIR = "unstructured"
 
 
 def upload_file(bytes_data, file):

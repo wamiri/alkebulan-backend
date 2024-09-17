@@ -17,7 +17,7 @@ load_dotenv()
 def run_pipeline():
     Pipeline.from_configs(
         context=ProcessorConfig(),
-        indexer_config=LocalIndexerConfig(input_path=os.getenv("UNSTRUCTURED_DIR")),
+        indexer_config=LocalIndexerConfig(input_path=os.getenv("LOCAL_FILE_INPUT_DIR")),
         downloader_config=LocalDownloaderConfig(),
         source_connection_config=LocalConnectionConfig(),
         partitioner_config=PartitionerConfig(
@@ -31,5 +31,7 @@ def run_pipeline():
                 "split_pdf_concurrency_level": 15,
             },
         ),
-        uploader_config=LocalUploaderConfig(output_dir=os.getenv("DATA_DIR")),
+        uploader_config=LocalUploaderConfig(
+            output_dir=os.getenv("LOCAL_FILE_OUTPUT_DIR")
+        ),
     ).run()
