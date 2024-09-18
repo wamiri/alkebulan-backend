@@ -2,54 +2,38 @@ import asyncio
 
 from dotenv import load_dotenv
 from llama_index.core import Document, SimpleDirectoryReader, VectorStoreIndex
-from llama_index.core.workflow import (
-    Context,
-    Event,
-    StartEvent,
-    StopEvent,
-    Workflow,
-    step,
-)
+from llama_index.core.base.base_query_engine import BaseQueryEngine
+from llama_index.core.workflow import Event, StartEvent, StopEvent, Workflow, step
 from llama_index.llms.openai import OpenAI
 
 load_dotenv()
 
 
-class ColumnExtractionPrepEvent(Event):
-    index: VectorStoreIndex
+class IndexingPrepEvent(Event):
+    documents: list[Document]
 
 
-class ColumnExtractionEvent(Event):
-    columns: str
+class IndexingEvent(Event):
+    query_engine: BaseQueryEngine
 
 
-class TabularDataWorkflow(Workflow):
+class RagDataWorkflow(Workflow):
     @step
-    async def ingest(self, ev: StartEvent) -> ColumnExtractionPrepEvent | None:
+    async def ingest(self, ev: StartEvent) -> IndexingPrepEvent | None:
         documents: list[Document] | None = ev.get("documents")
+
         if documents is None:
             return None
-        index: VectorStoreIndex = VectorStoreIndex.from_documents(documents)
-        return ColumnExtractionPrepEvent(index=index)
+
+        return IndexingPrepEvent(documents=documents)
 
     @step
-    async def extract_columns(
-        self,
-        ev: ColumnExtractionPrepEvent,
-    ) -> StopEvent:
-        index: VectorStoreIndex = ev.index
-
+    async def index_and_store(self, ev: IndexingPrepEvent) -> IndexingEvent:
+        documents: list[Document] = ev.documents
+        index: VectorStoreIndex = VectorStoreIndex.from_documents(documents)
         query_engine = index.as_query_engine()
-        result = await query_engine.aquery(
-            """
-            What type of data am I dealing with and get me a list of all the columns in the data?
-            """
-        )
-        return StopEvent(result=result)
+        return IndexingEvent(query_engine=query_engine)
 
-
-async def run():
-    documents = SimpleDirectoryReader("./data").load_data()
-    workflow = TabularDataWorkflow()
-    result = await workflow.run(documents=documents)
-    print(result)
+    @step
+    async def finalize(self, ev: IndexingEvent) -> StopEvent:
+        return StopEvent(result=ev.query_engine)

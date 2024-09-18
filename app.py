@@ -1,9 +1,28 @@
+import asyncio
 import os
 
 import streamlit as st
 
 from utils.file_readers import read_file
 from utils.file_uploaders import upload_file
+from utils.workflow import RagDataWorkflow
+
+
+async def run_workflow(documents):
+    workflow = RagDataWorkflow()
+    result = await workflow.run(documents=documents)
+    return result
+
+
+def pipeline(files):
+    documents = list()
+    for file in files:
+        bytes_data = file.read()
+        filename, file_extension = upload_file(bytes_data, file.name)
+        documents += read_file(filename, file_extension)
+
+    query_engine = asyncio.run(run_workflow(documents))
+    st.session_state["query_engine"] = query_engine
 
 
 def upload_tab():
@@ -13,10 +32,8 @@ def upload_tab():
         accept_multiple_files=True,
     )
 
-    for uploaded_file in uploaded_files:
-        bytes_data = uploaded_file.read()
-        filename, file_extension = upload_file(bytes_data, uploaded_file.name)
-        st.write(f"{filename}{file_extension} uploaded")
+    if uploaded_files:
+        pipeline(uploaded_files)
 
 
 def chat_tab():
@@ -32,7 +49,13 @@ def chat_tab():
     if prompt := st.chat_input("What is your question?"):
         st.chat_message("user").markdown(prompt)
         st.session_state.messages.append({"role": "user", "content": prompt})
-        response = f"Echo: {prompt}"
+
+        if st.session_state.get("query_engine") is not None:
+            response = st.session_state["query_engine"].query(prompt)
+        else:
+            response = (
+                "The query engine is not initialized yet. Please upload files first."
+            )
 
         with st.chat_message("assistant"):
             st.markdown(response)

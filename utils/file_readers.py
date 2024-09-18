@@ -12,10 +12,7 @@ from llama_index.readers.file import (
 from llama_index.readers.json import JSONReader
 
 load_dotenv()
-
-DATA_DIR = "../data"
-UNSTRUCTURED_DIR = "../unstructured"
-
+DATA_DIR = "data"
 
 file_readers = {
     ".csv": CSVReader(),
@@ -35,8 +32,7 @@ def read_file(filename, file_extension):
 
     file_extractor = {file_extension: parser}
     documents = SimpleDirectoryReader(
-        DATA_DIR,
-        input_files=[f"{filename}{file_extension}"],
+        input_files=[f"{DATA_DIR}/{filename}{file_extension}"],
         file_extractor=file_extractor,
     ).load_data()
 
