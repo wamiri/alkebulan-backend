@@ -1,7 +1,6 @@
 import os
 
 from dotenv import load_dotenv
-
 from utils.unstructured_file_processor import run_pipeline
 
 load_dotenv()
