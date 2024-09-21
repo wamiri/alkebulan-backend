@@ -3,6 +3,7 @@ from fastapi.responses import HTMLResponse
 
 from src.rag.router import router as rag_router
 
+
 app = FastAPI(docs_url="/api", redoc_url=None)
 app.include_router(rag_router)
 
