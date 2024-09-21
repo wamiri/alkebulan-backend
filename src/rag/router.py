@@ -1,4 +1,4 @@
-from fastapi import APIRouter, UploadFile
+from fastapi import APIRouter, UploadFile, WebSocket
 
 from src.rag.utils.file_readers import read_file
 from src.rag.utils.file_uploaders import upload_file
@@ -19,6 +19,9 @@ async def upload(upload_files: list[UploadFile]):
     return "Query engine loaded" if query_engine is not None else "No query engine"
 
 
-@router.get("/chat")
-async def chat():
-    return "Chatting..."
+@router.websocket("/chat")
+async def chat(websocket: WebSocket):
+    await websocket.accept()
+    while True:
+        data = await websocket.receive_text()
+        await websocket.send_text(f"Message text was: {data}")
