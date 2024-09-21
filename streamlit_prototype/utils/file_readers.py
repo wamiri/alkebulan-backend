@@ -2,13 +2,8 @@ import os
 
 from dotenv import load_dotenv
 from llama_index.core import SimpleDirectoryReader
-from llama_index.readers.file import (
-    CSVReader,
-    DocxReader,
-    EpubReader,
-    FlatReader,
-    PDFReader,
-)
+from llama_index.readers.file import (CSVReader, DocxReader, EpubReader,
+                                      FlatReader, PDFReader)
 from llama_index.readers.json import JSONReader
 
 load_dotenv()

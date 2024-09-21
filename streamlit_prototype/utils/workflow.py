@@ -3,7 +3,8 @@ import asyncio
 from dotenv import load_dotenv
 from llama_index.core import Document, SimpleDirectoryReader, VectorStoreIndex
 from llama_index.core.base.base_query_engine import BaseQueryEngine
-from llama_index.core.workflow import Event, StartEvent, StopEvent, Workflow, step
+from llama_index.core.workflow import (Event, StartEvent, StopEvent, Workflow,
+                                       step)
 from llama_index.llms.openai import OpenAI
 
 load_dotenv()
@@ -37,3 +38,5 @@ class RagDataWorkflow(Workflow):
     @step
     async def finalize(self, ev: IndexingEvent) -> StopEvent:
         return StopEvent(result=ev.query_engine)
+
+
