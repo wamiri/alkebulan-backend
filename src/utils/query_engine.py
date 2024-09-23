@@ -11,7 +11,9 @@ class QueryEngine:
 
         return self.engine.query(prompt)
 
+
 query_engine = QueryEngine()
+
 
 def get_query_engine():
     return query_engine

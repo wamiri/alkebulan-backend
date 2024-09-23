@@ -13,6 +13,9 @@ python-dotenv = "*"
 llama-index-readers-json = "*"
 unstructured = "*"
 unstructured-ingest = "*"
+llama-index-vector-stores-qdrant = "*"
+qdrant-client = "*"
+openai = "*"
 
 [dev-packages]
 ruff = "*"

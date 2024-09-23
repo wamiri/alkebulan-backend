@@ -2,8 +2,7 @@ import os
 
 from dotenv import load_dotenv
 
-from src.rag.utils.unstructured_file_processor import run_pipeline
-
+from src.rag.handlers.unstructured_file_processor import run_pipeline
 
 load_dotenv()
 UNSTRUCTURED_FILE_FORMATS = [".xls", ".xlsx"]
