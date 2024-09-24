@@ -1,0 +1,19 @@
+# Cache
+.ruff_cache/
+**/__pycache__/
+
+# Jupyter
+*.ipynb
+
+# Git
+.git/
+.gitignore
+
+# Virtual environments
+.venv/
+env/
+ENV/
+
+# Configuration and settings files
+pyrightconfig.json
+settings.json

@@ -1,0 +1,10 @@
+services:
+  backend:
+    image: rag-pipeline
+    pull_policy: never
+    container_name: rag-pipeline
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - 8000:8000
