@@ -57,6 +57,7 @@ jobs:
           docker pull $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
           echo "Updating docker-compose.yml..."
           sed -i "s|image: rag-pipeline|image: $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG|" docker-compose.yml
+          sed -i 's/- 8000:8000/- 80:8000/' docker-compose.yml
           echo "Stopping existing containers..."
           docker-compose down
           echo "Starting new containers..."
