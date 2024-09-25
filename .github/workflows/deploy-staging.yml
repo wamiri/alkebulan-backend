@@ -50,7 +50,7 @@ jobs:
         key: ${{ secrets.EC2_SSH_KEY }}
         port: 22
         script: |
-          docker pull 584448014764.dkr.ecr.us-east-2.amazonaws.com/fastapi-app:latest
-          docker stop fastapi-app || true
-          docker rm fastapi-app || true
-          docker run -d -p 80:8000 --name fastapi-app 584448014764.dkr.ecr.us-east-2.amazonaws.com/fastapi-app:latest
+          docker pull 584448014764.dkr.ecr.us-east-2.amazonaws.com/rag-api:latest
+          docker stop rag-api || true
+          docker rm rag-api || true
+          docker run -d -p 80:8000 --name rag-api 584448014764.dkr.ecr.us-east-2.amazonaws.com/rag-api:latest
