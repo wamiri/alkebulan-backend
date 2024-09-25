@@ -57,7 +57,7 @@ jobs:
         ECR_REPOSITORY: rag-api
         IMAGE_TAG: ${{ github.sha }}
       run: |
-        ssh ubuntu@${{ secrets.EC2_HOST }} << EOF
+        ssh -t ubuntu@${{ secrets.EC2_HOST }} << EOF
           docker pull $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
           docker stop rag-api || true
           docker rm rag-api || true
