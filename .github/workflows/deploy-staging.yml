@@ -57,3 +57,6 @@ jobs:
           docker stop rag-api || true
           docker rm rag-api || true
           docker run -d --name rag-api -p 80:8000 $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
+
+          echo "Deployment completed. Container logs:"
+          docker logs rag-api
