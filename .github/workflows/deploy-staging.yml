@@ -45,6 +45,9 @@ jobs:
         IMAGE_TAG: ${{ github.sha }}
         ECR_REPOSITORY: ${{ env.ECR_REPOSITORY }}
         AWS_REGION: ${{ env.AWS_REGION }}
+        QDRANT_API_URL: ${{ secrets.QDRANT_API_URL }}
+        QDRANT_API_KEY: ${{ secrets.QDRANT_API_KEY }}
+        OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
       with:
         host: ${{ secrets.EC2_HOST }}
         username: ubuntu
@@ -56,7 +59,16 @@ jobs:
           docker pull $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
           docker stop rag-api || true
           docker rm rag-api || true
-          docker run -d --name rag-api -p 80:8000 $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
+          docker run -d --name rag-api \ 
+            -p 80:8000 \
+            -e AWS_REGION=$AWS_REGION \
+            -e ECR_REGISTRY=$ECR_REGISTRY \
+            -e ECR_REPOSITORY=$ECR_REPOSITORY \
+            -e IMAGE_TAG=$IMAGE_TAG \
+            -e QDRANT_API_URL=$QDRANT_API_URL \
+            -e QDRANT_API_KEY=$QDRANT_API_KEY \
+            -e OPENAI_API_KEY=$OPENAI_API_KEY \
+            $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
 
           echo "Deployment completed. Container logs:"
           docker logs rag-api
