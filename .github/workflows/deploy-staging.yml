@@ -53,16 +53,9 @@ jobs:
         passphrase: ${{ secrets.EC2_SSH_PASSPHRASE }}
         script: |
           aws ecr get-login-password --region $AWS_REGION | docker login --username AWS --password-stdin $ECR_REGISTRY
-          echo "Pulling new image..."
           docker pull $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
-          echo "Updating docker-compose.yml..."
-          sed -i "s|image: rag-pipeline|image: $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG|" docker-compose.yml
-          sed -i 's/- 8000:8000/- 80:8000/' docker-compose.yml
-          echo "Stopping existing containers..."
-          docker-compose down
-          echo "Starting new containers..."
-          docker-compose up -d
-          echo "Pruning old images..."
-          docker image prune -f
+          docker stop rag-api || true
+          docker rm rag-api || true
+          docker run -d --name rag-api -p 80:8000 $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
           echo "Deployment completed. Container logs:"
-          docker-compose logs
+          docker logs rag-api
