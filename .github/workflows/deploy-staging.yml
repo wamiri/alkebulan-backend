@@ -20,7 +20,6 @@ jobs:
       uses: aws-actions/amazon-ecr-login@v1
       with:
         region: us-east-2
-        Region: us-east-2
       env:
         region: us-east-2
 
