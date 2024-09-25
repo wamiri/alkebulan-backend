@@ -47,9 +47,9 @@ jobs:
     - name: SSH to EC2 and deploy
       uses: appleboy/ssh-action@v0.1.4
       env:
-      ECR_REGISTRY: 584448014764.dkr.ecr.us-east-2.amazonaws.com
-      ECR_REPOSITORY: rag-api
-      IMAGE_TAG: ${{ github.sha }}
+        ECR_REGISTRY: 584448014764.dkr.ecr.us-east-2.amazonaws.com
+        ECR_REPOSITORY: rag-api
+        IMAGE_TAG: ${{ github.sha }}
       with:
         host: ${{ secrets.EC2_HOST }}
         username: ubuntu
