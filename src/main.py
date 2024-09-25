@@ -1,8 +1,11 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import HTMLResponse
+import os
 
 from src.rag.router import router as rag_router
+
+APP_URL = os.environ.get("APP_URL", "localhost:8000")
 
 app = FastAPI(docs_url="/api", redoc_url=None)
 app.add_middleware(
@@ -35,7 +38,8 @@ async def upload():
 
 @app.get("/chat-query-engine", tags=["Query Engine"])
 async def chat_query_engine():
-    html = """
+    web_socket_url = f"ws://{APP_URL}/rag/chat-query-engine"
+    html = f"""
     <!DOCTYPE html>
     <html>
         <head>
@@ -50,21 +54,21 @@ async def chat_query_engine():
             <ul id='messages'>
             </ul>
             <script>
-                var ws = new WebSocket("ws://localhost:8000/rag/chat-query-engine");
-                ws.onmessage = function(event) {
+                var ws = new WebSocket({web_socket_url});
+                ws.onmessage = function(event) {{
                     var messages = document.getElementById('messages')
                     var message = document.createElement('li')
                     var content = document.createTextNode(event.data)
                     message.appendChild(content)
                     messages.appendChild(message)
-                };
+                }};
 
-                function sendMessage(event) {
+                function sendMessage(event) {{
                     var input = document.getElementById("messageText")
                     ws.send(input.value)
                     input.value = ''
                     event.preventDefault()
-                }
+                }}
             </script>
         </body>
     </html>
@@ -74,7 +78,8 @@ async def chat_query_engine():
 
 @app.get("/chat-similarity-searcher", tags=["Similarity Searcher"])
 async def chat_similarity_searcher():
-    html = """
+    web_socket_url = f"ws://{APP_URL}/rag/chat-similarity-searcher"
+    html = f"""
     <!DOCTYPE html>
     <html>
         <head>
@@ -89,21 +94,21 @@ async def chat_similarity_searcher():
             <ul id='messages'>
             </ul>
             <script>
-                var ws = new WebSocket("ws://localhost:8000/rag/chat-similarity-searcher");
-                ws.onmessage = function(event) {
+                var ws = new WebSocket({web_socket_url});
+                ws.onmessage = function(event) {{
                     var messages = document.getElementById('messages')
                     var message = document.createElement('li')
                     var content = document.createTextNode(event.data)
                     message.appendChild(content)
                     messages.appendChild(message)
-                };
+                }};
 
-                function sendMessage(event) {
+                function sendMessage(event) {{
                     var input = document.getElementById("messageText")
                     ws.send(input.value)
                     input.value = ''
                     event.preventDefault()
-                }
+                }}
             </script>
         </body>
     </html>
