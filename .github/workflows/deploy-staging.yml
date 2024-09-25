@@ -30,27 +30,34 @@ jobs:
       env:
         region: ${{ secrets.AWS_REGION }}
 
-    - name: Build and push Docker image to ECR
+    - name: Build, tag and push Docker image to ECR
       run: |
-        docker build -t rag-api .
-        docker tag rag-api:latest 584448014764.dkr.ecr.us-east-2.amazonaws.com/rag-api:latest
-        docker push 584448014764.dkr.ecr.us-east-2.amazonaws.com/rag-api:latest
+        docker build -t $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG .
+        docker push $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
       env:
         AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
         AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
         QDRANT_API_URL: ${{ secrets.QDRANT_API_URL }}
         QDRANT_API_KEY: ${{ secrets.QDRANT_API_KEY }}
         OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+        ECR_REGISTRY: 584448014764.dkr.ecr.us-east-2.amazonaws.com
+        ECR_REPOSITORY: rag-api
+        IMAGE_TAG: ${{ github.sha }}
 
     - name: SSH to EC2 and deploy
       uses: appleboy/ssh-action@v0.1.4
+      env:
+      ECR_REGISTRY: 584448014764.dkr.ecr.us-east-2.amazonaws.com
+      ECR_REPOSITORY: rag-api
+      IMAGE_TAG: ${{ github.sha }}
       with:
         host: ${{ secrets.EC2_HOST }}
         username: ubuntu
         key: ${{ secrets.EC2_SSH_KEY }}
         port: 22
         script: |
-          docker pull 584448014764.dkr.ecr.us-east-2.amazonaws.com/rag-api:latest
+          docker pull $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
           docker stop rag-api || true
           docker rm rag-api || true
-          docker run -d -p 80:8000 --name rag-api 584448014764.dkr.ecr.us-east-2.amazonaws.com/rag-api:latest
+          docker run -d -p 80:8000 --name rag-api $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
+          docker image prune -f
