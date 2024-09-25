@@ -52,10 +52,10 @@ jobs:
         port: 22
         passphrase: ${{ secrets.EC2_SSH_PASSPHRASE }}
         script: |
-          aws ecr get-login-password --region $AWS_REGION | docker login --username AWS --password-stdin $ECR_REGISTRY
-          docker pull $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
-          docker stop rag-api || true
-          docker rm rag-api || true
-          docker run -d --name rag-api -p 80:8000 $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
+          sudo aws ecr get-login-password --region $AWS_REGION | sudo docker login --username AWS --password-stdin $ECR_REGISTRY
+          sudo docker pull $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
+          sudo docker stop rag-api || true
+          sudo docker rm rag-api || true
+          sudo docker run -d --name rag-api -p 80:8000 $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
           echo "Deployment completed. Container logs:"
-          docker logs rag-api
+          sudo docker logs rag-api
