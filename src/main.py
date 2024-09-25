@@ -54,7 +54,7 @@ async def chat_query_engine():
             <ul id='messages'>
             </ul>
             <script>
-                var ws = new WebSocket({web_socket_url});
+                var ws = new WebSocket("{web_socket_url}");
                 ws.onmessage = function(event) {{
                     var messages = document.getElementById('messages')
                     var message = document.createElement('li')
@@ -94,7 +94,7 @@ async def chat_similarity_searcher():
             <ul id='messages'>
             </ul>
             <script>
-                var ws = new WebSocket({web_socket_url});
+                var ws = new WebSocket("{web_socket_url}");
                 ws.onmessage = function(event) {{
                     var messages = document.getElementById('messages')
                     var message = document.createElement('li')
