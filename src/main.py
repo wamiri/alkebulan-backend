@@ -4,7 +4,7 @@ from fastapi.responses import HTMLResponse
 
 from src.rag.router import router as rag_router
 
-app = FastAPI(docs_url="/api", redoc_url=None)
+app = FastAPI(redoc_url=None)
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
@@ -15,7 +15,7 @@ app.add_middleware(
 app.include_router(rag_router)
 
 
-@app.get("/")
+@app.get("/", tags=["Hello"])
 async def hello():
     return "Hello, world."
 

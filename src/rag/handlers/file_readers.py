@@ -1,4 +1,3 @@
-from dotenv import load_dotenv
 from llama_index.core import SimpleDirectoryReader
 from llama_index.readers.file import (
     CSVReader,
@@ -9,7 +8,6 @@ from llama_index.readers.file import (
 )
 from llama_index.readers.json import JSONReader
 
-load_dotenv()
 DATA_DIR = "data"
 
 file_readers = {

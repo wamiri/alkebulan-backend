@@ -1,10 +1,9 @@
+version: '3'
 services:
   backend:
-    image: rag-pipeline
-    pull_policy: never
-    container_name: rag-pipeline
     build:
       context: .
       dockerfile: Dockerfile
+    container_name: rag-pipeline
     ports:
-      - 8000:8000
+      - "8000:8000"
