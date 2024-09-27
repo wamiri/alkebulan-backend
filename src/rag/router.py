@@ -18,7 +18,9 @@ async def upload(upload_files: list[UploadFile]):
         filename, file_extension = await upload_file(bytes_data, file.filename)
         documents += await read_file(filename, file_extension)
 
-    query_engine.set_engine(await run_workflow(documents))
+    # query_engine.set_engine(await run_workflow(documents))
+    query_engine.set_engine(await run_workflow())
+
     return "Query engine loaded"
 
 

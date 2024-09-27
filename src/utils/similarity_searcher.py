@@ -1,5 +1,3 @@
-import os
-
 import openai
 from qdrant_client.qdrant_client import QdrantClient
 
@@ -9,10 +7,10 @@ from src.utils.config import get_env_var
 class SimilaritySearcher:
     def __init__(self) -> None:
         self.qdrant_client = QdrantClient(
-            url=os.environ["QDRANT_API_URL"],
-            api_key=os.environ["QDRANT_API_KEY"],
+            url=get_env_var("QDRANT_API_URL"),
+            api_key=get_env_var("QDRANT_API_KEY"),
         )
-        self.openai_client = openai.Client(api_key=get_env_var)
+        self.openai_client = openai.Client(api_key=get_env_var("OPENAI_API_KEY"))
 
     def similarity_search(self, text):
         embeddings = (

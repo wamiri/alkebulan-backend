@@ -1,0 +1,76 @@
+name: Deploy FastAPI to EC2
+
+on:
+  push:
+    branches: [ main ]
+
+env:
+  AWS_REGION: ${{ secrets.AWS_REGION }}
+  ECR_REPOSITORY: ${{ secrets.ECR_REPOSITORY }}
+  EC2_INSTANCE_ID: ${{ secrets.EC2_INSTANCE_ID }}
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v2
+
+    - name: Configure AWS credentials
+      uses: aws-actions/configure-aws-credentials@v1
+      with:
+        aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+        aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+        aws-region: ${{ env.AWS_REGION }}
+
+    - name: Login to Amazon ECR
+      id: login-ecr
+      uses: aws-actions/amazon-ecr-login@v1
+
+    - name: Build, tag, and push image to Amazon ECR
+      env:
+        ECR_REGISTRY: 584448014764.dkr.ecr.us-east-2.amazonaws.com
+        IMAGE_TAG: ${{ github.sha }}
+        ECR_REPOSITORY: ${{ env.ECR_REPOSITORY }}
+      run: |
+        docker build -t $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG .
+        docker tag $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
+        docker push $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
+        
+    - name: Deploy to EC2
+      uses: appleboy/ssh-action@master
+      env:
+        ECR_REGISTRY: 584448014764.dkr.ecr.us-east-2.amazonaws.com
+        IMAGE_TAG: ${{ github.sha }}
+        ECR_REPOSITORY: ${{ env.ECR_REPOSITORY }}
+        AWS_REGION: ${{ env.AWS_REGION }}
+        QDRANT_API_URL: ${{ secrets.QDRANT_API_URL }}
+        QDRANT_API_KEY: ${{ secrets.QDRANT_API_KEY }}
+        OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+        APP_URL: ${{ secrets.APP_URL }}
+      with:
+        host: ${{ secrets.EC2_HOST }}
+        username: ubuntu
+        key: ${{ secrets.EC2_SSH_KEY }}
+        port: 22
+        passphrase: ${{ secrets.EC2_SSH_PASSPHRASE }}
+        script: |
+          aws ecr get-login-password --region us-east-2 | docker login --username AWS --password-stdin $ECR_REGISTRY
+          docker pull $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
+          docker stop rag-api || true
+          docker rm rag-api || true
+          docker run -d --name rag-api \ 
+            -p 80:8000 \
+            -e AWS_REGION=$AWS_REGION \
+            -e ECR_REGISTRY=$ECR_REGISTRY \
+            -e ECR_REPOSITORY=$ECR_REPOSITORY \
+            -e IMAGE_TAG=$IMAGE_TAG \
+            -e APP_URL=$APP_URL \
+            -e QDRANT_API_URL=$QDRANT_API_URL \
+            -e QDRANT_API_KEY=$QDRANT_API_KEY \
+            -e OPENAI_API_KEY=$OPENAI_API_KEY \
+            $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
+
+          echo "Deployment completed. Container logs:"
+          docker logs rag-api
