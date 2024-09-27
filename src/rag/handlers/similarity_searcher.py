@@ -1,7 +1,7 @@
 import openai
 from qdrant_client.qdrant_client import QdrantClient
 
-from src.utils.config import get_env_var
+from src.config import get_env_var
 
 
 class SimilaritySearcher:

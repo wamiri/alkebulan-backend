@@ -1,8 +1,6 @@
+import openai
 from elasticsearch import Elasticsearch
 from elasticsearch.helpers import bulk
-import requests
-import base64
-import openai
 
 
 class ElasticCloudEmbeddingStore:

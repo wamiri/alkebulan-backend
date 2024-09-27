@@ -1,51 +1,20 @@
-from IPython.display import JSON
-
-import json
-
-from unstructured_client import UnstructuredClient
-from unstructured_client.models import shared
-from unstructured_client.models.errors import SDKError
-
-from unstructured.partition.auto import partition
-from unstructured.partition.pdf import partition_pdf
-from unstructured.staging.base import dict_to_elements, elements_to_json
-from unstructured.partition.text import partition_text
-from unstructured.partition.docx import partition_docx
-from unstructured.partition.doc import partition_doc
-from unstructured.partition.image import partition_image
-
-from unstructured.chunking.basic import chunk_elements
-from unstructured.chunking.title import chunk_by_title
-import logging
-import sys
+import hashlib
 import os
-
-import qdrant_client
-from IPython.display import Markdown, display
-from llama_index.core import VectorStoreIndex, SimpleDirectoryReader
-from llama_index.core import StorageContext
-from llama_index.vector_stores.qdrant import QdrantVectorStore
-from llama_index.embeddings.fastembed import FastEmbedEmbedding
-from llama_index.core import Settings
-from langchain_core.documents import Document
-from langchain_openai import OpenAIEmbeddings
-
-from unstructured.partition.pdf import partition_pdf
-from img2table.ocr import TesseractOCR
-from img2table.document import Image
-from unstructured.documents.elements import Text, Table
-import unstructured_client
-from unstructured_client.models import operations, shared
 import uuid
 
-import requests
-import json
-from pathlib import Path
+import unstructured_client
 from img2table.document import PDF
 from img2table.ocr import TesseractOCR
-import pandas as pd
+from langchain_core.documents import Document
+from unstructured_client.models import operations, shared
 
-import hashlib
+from unstructured.chunking.title import chunk_by_title
+from unstructured.partition.auto import partition
+from unstructured.partition.doc import partition_doc
+from unstructured.partition.docx import partition_docx
+from unstructured.partition.image import partition_image
+from unstructured.partition.pdf import partition_pdf
+from unstructured.partition.text import partition_text
 
 
 class Ingest:
