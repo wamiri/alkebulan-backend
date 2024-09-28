@@ -1,9 +1,8 @@
 version: '3'
 services:
-  backend:
+  chat_service:
     build:
-      context: .
+      context: ./chat_service
       dockerfile: Dockerfile
-    container_name: rag-pipeline
     ports:
       - "8000:8000"
