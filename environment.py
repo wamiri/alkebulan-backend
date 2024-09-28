@@ -1,13 +1,15 @@
 import os
 
+from dotenv import load_dotenv
 
-class Environment:
-    def __init__(self, env_vars: list[str]) -> None:
-        for env_var in env_vars:
-            super().__setattr__(env_var, self.get_env_var(env_var))
+load_dotenv()
 
-    def get_env_var(self, env_var: str) -> str:
-        if os.getenv(env_var) is None:
+
+def get_env_var(env_var: str, default: str | None = "") -> str:
+    if os.getenv(env_var) is None:
+        if default is None:
             raise ValueError(f"Environment variable '{env_var}' is not set.")
 
-        return os.environ[env_var]
+        return default
+
+    return os.environ[env_var]

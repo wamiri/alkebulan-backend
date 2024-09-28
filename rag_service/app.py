@@ -1,13 +1,14 @@
 import os
 
-from fastapi import FastAPI
+from fastapi import FastAPI, WebSocket
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import HTMLResponse
 
-from src.rag.router import router as rag_router
+from rag_service.config import APP_URL
+from rag_service.utils import get_similarity_searcher
 
-APP_URL = os.environ.get("APP_URL", "localhost:8000")
-app = FastAPI(docs_url="/api", redoc_url=None)
+
+app = FastAPI(redoc_url=None)
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
@@ -15,17 +16,21 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
-app.include_router(rag_router)
 
 
-@app.get("/", tags=["Hello"])
-async def hello():
-    return "Hello, world."
+@app.websocket("/chat-similarity-searcher")
+async def chat_similarity_searcher(websocket: WebSocket):
+    similarity_searcher = get_similarity_searcher()
+    await websocket.accept()
+    while True:
+        text = await websocket.receive_text()
+        response = similarity_searcher.similarity_search(text)
+        await websocket.send_text(f"Response: {response}")
 
 
-@app.get("/chat-similarity-searcher", tags=["Similarity Searcher"])
-async def chat_similarity_searcher():
-    web_socket_url = f"ws://{APP_URL}/rag/chat-similarity-searcher"
+@app.get("/chat-similarity-searcher-html")
+async def chat_similarity_searcher_HTML():
+    web_socket_url = f"ws://{APP_URL}/chat-similarity-searcher"
     html = f"""
     <!DOCTYPE html>
     <html>
