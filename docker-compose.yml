@@ -1,9 +1,15 @@
 version: '3'
 services:
   backend:
+    image: ${DOCKER_IMAGE_NAME}
     build:
       context: .
       dockerfile: Dockerfile
-    container_name: rag-pipeline
+    container_name: ${DOCKER_CONTAINER_NAME}
     ports:
       - "8000:8000"
+    environment:
+      - QDRANT_API_URL=${QDRANT_API_URL}
+      - QDRANT_API_KEY=${QDRANT_API_KEY}
+      - OPENAI_API_KEY=${OPENAI_API_KEY}
+      - APP_URL=${APP_URL}
