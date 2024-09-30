@@ -1,23 +1,17 @@
-import os
-
-from app.config import APP_URL
-from app.utils import get_similarity_searcher
-from fastapi import FastAPI, WebSocket
-from fastapi.middleware.cors import CORSMiddleware
+from fastapi import APIRouter, Depends, WebSocket
 from fastapi.responses import HTMLResponse
 
+from app.chat.config import APP_URL
+from app.chat.utils import get_similarity_searcher
 
-app = FastAPI(redoc_url=None)
-app.add_middleware(
-    CORSMiddleware,
-    allow_origins=["*"],
-    allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
+router = APIRouter(
+    prefix="/chat",
+    tags=["Chat"],
+    responses={401: {"description": "Unauthorized"}},
 )
 
 
-@app.websocket("/chat-similarity-searcher")
+@router.websocket("/chat-similarity-searcher")
 async def chat_similarity_searcher(websocket: WebSocket):
     similarity_searcher = get_similarity_searcher()
     await websocket.accept()
@@ -27,7 +21,7 @@ async def chat_similarity_searcher(websocket: WebSocket):
         await websocket.send_text(f"Response: {response}")
 
 
-@app.get("/chat-similarity-searcher-html")
+@router.get("/chat-similarity-searcher-html")
 async def chat_similarity_searcher_HTML():
     web_socket_url = f"ws://{APP_URL}/chat-similarity-searcher"
     html = f"""

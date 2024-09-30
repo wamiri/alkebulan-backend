@@ -1,13 +1,13 @@
 import openai
 from qdrant_client.qdrant_client import QdrantClient
 
-from app.config import OPENAI_API_KEY, QDRANT_API_KEY
+from app.chat.config import OPENAI_API_KEY, QDRANT_API_KEY, QDRANT_API_URL
 
 
 class SimilaritySearcher:
     def __init__(self) -> None:
         self.qdrant_client = QdrantClient(
-            url=QDRANT_API_KEY,
+            url=QDRANT_API_URL,
             api_key=QDRANT_API_KEY,
         )
         self.openai_client = openai.Client(api_key=OPENAI_API_KEY)

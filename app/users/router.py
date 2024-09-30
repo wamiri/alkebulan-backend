@@ -1,23 +1,23 @@
 from datetime import timedelta
 from typing import Annotated
 
-from fastapi import Depends, FastAPI, HTTPException, status
+from fastapi import APIRouter, Depends, FastAPI, HTTPException, status
 from fastapi.security import OAuth2PasswordRequestForm
 
-from app.config import ACCESS_TOKEN_EXPIRE_MINUTES
-from app.database import users_db
-from app.schemas import Token, User
-from app.utils import (
+from app.users.config import ACCESS_TOKEN_EXPIRE_MINUTES
+from app.users.models import users_db
+from app.users.schemas import Token, User
+from app.users.utils import (
     authenticate_user,
     create_access_token,
     get_current_active_user,
 )
 
-app = FastAPI()
+router = APIRouter(prefix="/users", tags=["Users"])
 
 
-@app.post("/token")
-async def login_for_access_token(
+@router.post("/login/")
+async def login(
     form_data: Annotated[OAuth2PasswordRequestForm, Depends()],
 ) -> Token:
     user = authenticate_user(users_db, form_data.username, form_data.password)
@@ -37,8 +37,8 @@ async def login_for_access_token(
     return Token(access_token=access_token, token_type="bearer")
 
 
-@app.get("/users/me/", response_model=User)
-async def read_users_me(
+@router.get("/me/", response_model=User)
+async def get_profile(
     current_user: Annotated[User, Depends(get_current_active_user)],
 ):
     return current_user

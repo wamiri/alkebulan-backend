@@ -1,29 +1,10 @@
 version: "3"
 services:
-  chat_service:
+  backend:
     build:
-      context: ./chat_service
+      context: .
       dockerfile: Dockerfile
     env_file:
       - .env
     ports:
-      - "${CHAT_SERVICE_PORT}:${CHAT_SERVICE_PORT}"
-    networks:
-      - backend_network
-    environment:
-      - PORT=${CHAT_SERVICE_PORT}
-
-  user_service:
-    build:
-      context: ./user_service
-      dockerfile: Dockerfile
-    ports:
-      - "${USER_SERVICE_PORT}:${USER_SERVICE_PORT}"
-    networks:
-      - backend_network
-    environment:
-      - PORT=${USER_SERVICE_PORT}
-
-networks:
-  backend_network:
-    driver: bridge
+      - "8000:8000"

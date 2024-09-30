@@ -7,9 +7,9 @@ from fastapi.security import OAuth2PasswordBearer
 from jwt.exceptions import InvalidTokenError
 from passlib.context import CryptContext
 
-from app.config import PASSWORD_HASHING_ALGORITHM, PASSWORD_SECRET_KEY
-from app.database import users_db
-from app.schemas import TokenData, User, UserInDB
+from app.users.config import PASSWORD_HASHING_ALGORITHM, PASSWORD_SECRET_KEY
+from app.users.models import users_db
+from app.users.schemas import TokenData, User, UserInDB
 
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token")
