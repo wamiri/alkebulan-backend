@@ -11,6 +11,7 @@ fastapi = {extras = ["standard"], version = "^0.115.0"}
 python-multipart = "^0.0.11"
 openai = "^1.50.2"
 qdrant-client = "^1.11.3"
+python-dotenv = "^1.0.1"
 
 
 [tool.poetry.group.dev.dependencies]
