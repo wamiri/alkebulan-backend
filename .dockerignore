@@ -2,9 +2,6 @@
 .ruff_cache/
 **/__pycache__/
 
-# Jupyter
-*.ipynb
-
 # Git
 .git/
 .gitignore
@@ -14,6 +11,7 @@
 env/
 ENV/
 
+preprocessor_service/
+
 # Configuration and settings files
-pyrightconfig.json
-settings.json
+*.json

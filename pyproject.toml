@@ -1,0 +1,26 @@
+[tool.poetry]
+name = "alkebulan-backend"
+version = "0.1.0"
+description = ""
+authors = ["Victor Momodu <victoramomodu@gmail.com>"]
+readme = "README.md"
+
+[tool.poetry.dependencies]
+python = "^3.10"
+fastapi = {extras = ["standard"], version = "^0.115.0"}
+python-dotenv = "^1.0.1"
+pyjwt = "^2.9.0"
+passlib = {extras = ["bcrypt"], version = "^1.7.4"}
+openai = "^1.50.2"
+qdrant-client = "^1.11.3"
+sqlalchemy = "^2.0.35"
+opensearch-py = "^2.7.1"
+boto3 = "^1.35.29"
+
+
+[tool.poetry.group.dev.dependencies]
+ruff = "^0.6.8"
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"

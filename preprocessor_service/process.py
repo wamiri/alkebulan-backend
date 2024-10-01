@@ -6,8 +6,6 @@ import unstructured_client
 from img2table.document import PDF
 from img2table.ocr import TesseractOCR
 from langchain_core.documents import Document
-from unstructured_client.models import operations, shared
-
 from unstructured.chunking.title import chunk_by_title
 from unstructured.partition.auto import partition
 from unstructured.partition.doc import partition_doc
@@ -15,6 +13,7 @@ from unstructured.partition.docx import partition_docx
 from unstructured.partition.image import partition_image
 from unstructured.partition.pdf import partition_pdf
 from unstructured.partition.text import partition_text
+from unstructured_client.models import operations, shared
 
 
 class Ingest:

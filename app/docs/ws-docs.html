@@ -1,0 +1,154 @@
+<!doctype html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <title>Alkebulan WebSocket Routes</title>
+        <style>
+            body {
+                font-family: Arial, sans-serif;
+                line-height: 1.6;
+                margin: 20px;
+            }
+            h1 {
+                color: #2c3e50;
+            }
+            h2 {
+                color: #2980b9;
+            }
+            h3 {
+                color: #e67e22;
+            }
+            p,
+            ul {
+                margin: 10px 0;
+            }
+            code {
+                background: #f4f4f4;
+                padding: 2px 4px;
+                border-radius: 3px;
+            }
+        </style>
+    </head>
+    <body>
+        <h1>Alkebulan WebSocket Routes</h1>
+
+        <p>
+            <strong>Description</strong>:<br />
+            The Alkebulan document retrieval and processing system provides
+            real-time chat functionality via WebSocket connections. This allows
+            clients to interact with the system for retrieving, processing, and
+            receiving insights from documents using large language models
+            (LLMs). The WebSocket chat routes offer bi-directional
+            communication, enabling seamless queries and responses as well as
+            processing updates in real-time.
+        </p>
+
+        <h2>Routes Overview:</h2>
+        <p>Alkebulan's WebSocket chat routes facilitate the following:</p>
+        <ul>
+            <li>
+                <strong>Document Retrieval</strong>: Query documents from the
+                system's extensive database using LLMs for natural language
+                processing.
+            </li>
+            <li>
+                <strong>Real-Time Responses</strong>: Receive real-time
+                responses and processing feedback on document-based queries.
+            </li>
+            <li>
+                <strong>Interactive Chat</strong>: Engage in an interactive chat
+                experience where each query is processed in real-time by the
+                underlying LLM models.
+            </li>
+        </ul>
+
+        <h2>WebSocket Endpoints:</h2>
+
+        <h3>1. Chat Route for Querying Winter Sports Data</h3>
+        <ul>
+            <li>
+                <strong>Endpoint</strong>:
+                <code>ws://{baseUrl}/chat/similarity-search</code>
+            </li>
+            <li>
+                <strong>Description</strong>: This WebSocket route allows users
+                to submit queries related to winter sports data. The data is
+                stored in a <strong>Qdrant vector database</strong>, and upon
+                retrieval, the WebSocket connection returns relevant information
+                based on the query. This route is ideal for retrieving document
+                embeddings and insights related to winter sports.
+            </li>
+            <li>
+                <strong>Usage</strong>:
+                <ul>
+                    <li>
+                        Send queries related to winter sports (e.g., "List the
+                        most successful Olympic winter sports athletes").
+                    </li>
+                    <li>
+                        Receive real-time results based on vector similarity
+                        search.
+                    </li>
+                </ul>
+            </li>
+            <li>
+                <strong>Payload Format</strong>:
+                <ul>
+                    <li>
+                        <strong>Request</strong>: Plain text containing the
+                        query (e.g., "Top winter sports events of 2022").
+                    </li>
+                    <li>
+                        <strong>Response</strong>: Plain text response
+                        corresponding to the query (e.g., "The top events of
+                        2022 include ...").
+                    </li>
+                </ul>
+            </li>
+        </ul>
+
+        <h3>2. Chat Route for Querying Financial Data</h3>
+        <ul>
+            <li>
+                <strong>Endpoint</strong>:
+                <code>ws://{baseUrl}/chat/open-search</code>
+            </li>
+            <li>
+                <strong>Description</strong>: This WebSocket route allows users
+                to query <strong>financial data</strong> stored in an
+                <strong>OpenSearch database deployed on AWS</strong>. Clients
+                can send financial-related queries and receive real-time
+                responses based on indexed financial documents and data from the
+                OpenSearch database.
+            </li>
+            <li>
+                <strong>Usage</strong>:
+                <ul>
+                    <li>
+                        Send financial data queries (e.g., "Get stock prices for
+                        2023" or "Fetch quarterly reports for XYZ Corp").
+                    </li>
+                    <li>
+                        Receive real-time results by querying the OpenSearch
+                        index on AWS.
+                    </li>
+                </ul>
+            </li>
+            <li>
+                <strong>Payload Format</strong>:
+                <ul>
+                    <li>
+                        <strong>Request</strong>: Plain text containing the
+                        query (e.g., "Quarterly financial report for XYZ Corp").
+                    </li>
+                    <li>
+                        <strong>Response</strong>: Plain text response
+                        containing financial data or documents corresponding to
+                        the query (e.g., "XYZ Corp Q1 2023 report shows ...").
+                    </li>
+                </ul>
+            </li>
+        </ul>
+    </body>
+</html>
