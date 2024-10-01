@@ -13,6 +13,9 @@ pyjwt = "^2.9.0"
 passlib = {extras = ["bcrypt"], version = "^1.7.4"}
 openai = "^1.50.2"
 qdrant-client = "^1.11.3"
+sqlalchemy = "^2.0.35"
+opensearch-py = "^2.7.1"
+boto3 = "^1.35.29"
 
 
 [tool.poetry.group.dev.dependencies]

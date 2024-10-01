@@ -6,13 +6,15 @@ from fastapi import Depends, HTTPException, status
 from fastapi.security import OAuth2PasswordBearer
 from jwt.exceptions import InvalidTokenError
 from passlib.context import CryptContext
+from sqlalchemy.orm import Session
 
+from app.dependencies import get_db
 from app.users.config import PASSWORD_HASHING_ALGORITHM, PASSWORD_SECRET_KEY
-from app.users.models import users_db
-from app.users.schemas import TokenData, User, UserInDB
+from app.users.crud import create_user, get_user, get_user_by_username
+from app.users.schemas import TokenDecode, UserCreate, UserData
 
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
-oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token")
+oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/users/login")
 
 
 def verify_password(plain_password, hashed_password):
@@ -23,16 +25,19 @@ def get_password_hash(password):
     return pwd_context.hash(password)
 
 
-def get_user(db, username: str):
-    if username in db:
-        user_dict = db[username]
-        return UserInDB(**user_dict)
+def create_new_user(db: Session, user: UserCreate):
+    return create_user(db, user)
 
 
-def authenticate_user(db, username: str, password: str):
-    user = get_user(db, username)
+def check_if_user_exists(db: Session, username: str):
+    return get_user_by_username(db, username)
+
+
+def authenticate_user(db: Session, username: str, password: str):
+    user = get_user_by_username(db, username)
     if not user:
         return False
+
     if not verify_password(password, user.hashed_password):
         return False
 
@@ -55,12 +60,16 @@ def create_access_token(data: dict, expires_delta: timedelta | None = None):
     return encoded_jwt
 
 
-async def get_current_user(token: Annotated[str, Depends(oauth2_scheme)]):
+async def get_current_user(
+    token: Annotated[str, Depends(oauth2_scheme)],
+    db: Session = Depends(get_db),
+):
     credentials_exception = HTTPException(
         status_code=status.HTTP_401_UNAUTHORIZED,
         detail="Could not validate credentials",
         headers={"WWW-Authenticate": "Bearer"},
     )
+
     try:
         payload = jwt.decode(
             token,
@@ -70,11 +79,11 @@ async def get_current_user(token: Annotated[str, Depends(oauth2_scheme)]):
         username: str = payload.get("sub")
         if username is None:
             raise credentials_exception
-        token_data = TokenData(username=username)
+        token_data = TokenDecode(username=username)
     except InvalidTokenError:
         raise credentials_exception
 
-    user = get_user(users_db, username=token_data.username)
+    user = get_user_by_username(db, username=token_data.username)
     if user is None:
         raise credentials_exception
 
@@ -82,9 +91,9 @@ async def get_current_user(token: Annotated[str, Depends(oauth2_scheme)]):
 
 
 async def get_current_active_user(
-    current_user: Annotated[User, Depends(get_current_user)],
+    current_user: Annotated[UserData, Depends(get_current_user)],
 ):
-    if current_user.disabled:
+    if not current_user.is_active:
         raise HTTPException(status_code=400, detail="Inactive user")
 
     return current_user
