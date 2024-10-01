@@ -11,7 +11,7 @@ router = APIRouter(
 )
 
 
-@router.websocket("/similarity-searcher")
+@router.websocket("/similarity-search")
 async def chat_similarity_searcher(websocket: WebSocket):
     similarity_searcher = get_similarity_searcher()
     await websocket.accept()
@@ -21,7 +21,7 @@ async def chat_similarity_searcher(websocket: WebSocket):
         await websocket.send_text(f"Response: {response}")
 
 
-@router.websocket("/open-searcher")
+@router.websocket("/open-search")
 async def chat_open_search(websocket: WebSocket):
     open_searcher = get_open_searcher()
     await websocket.accept()

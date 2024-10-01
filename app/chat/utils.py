@@ -1,6 +1,6 @@
-import openai
-from opensearchpy import OpenSearch, RequestsHttpConnection, AWSV4SignerAuth
 import boto3
+import openai
+from opensearchpy import AWSV4SignerAuth, OpenSearch, RequestsHttpConnection
 from qdrant_client.qdrant_client import QdrantClient
 
 from app.chat.config import (
