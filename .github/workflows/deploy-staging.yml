@@ -58,19 +58,21 @@ jobs:
         script: |
           aws ecr get-login-password --region us-east-2 | docker login --username AWS --password-stdin $ECR_REGISTRY
           docker pull $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
-          docker stop rag-api || true
-          docker rm rag-api || true
-          docker run -d --name rag-api \ 
-            -p 80:8000 \
-            -e AWS_REGION=$AWS_REGION \
-            -e ECR_REGISTRY=$ECR_REGISTRY \
-            -e ECR_REPOSITORY=$ECR_REPOSITORY \
-            -e IMAGE_TAG=$IMAGE_TAG \
-            -e APP_URL=$APP_URL \
-            -e QDRANT_API_URL=$QDRANT_API_URL \
-            -e QDRANT_API_KEY=$QDRANT_API_KEY \
-            -e OPENAI_API_KEY=$OPENAI_API_KEY \
-            $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
 
-          echo "Deployment completed. Container logs:"
-          docker logs rag-api
+          if docker image inspect $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG > /dev/null 2>&1; then
+            docker-compose down
+
+            echo "DOCKER_IMAGE_NAME=$ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG" > .env
+            echo "DOCKER_CONTAINER_NAME=$ECR_REPOSITORY" >> .env
+            echo "QDRANT_API_URL=$QDRANT_API_URL" >> .env
+            echo "QDRANT_API_KEY=$QDRANT_API_KEY" >> .env
+            echo "OPENAI_API_KEY=$OPENAI_API_KEY" >> .env
+            echo "APP_URL=$APP_URL" >> .env
+
+            docker-compose up -d
+
+            echo "Deployment completed. Container logs:"
+            docker-compose logs -f
+          else
+            echo "Image not found in ECR. Deployment failed."
+          fi
