@@ -16,6 +16,7 @@ qdrant-client = "^1.11.3"
 sqlalchemy = "^2.0.35"
 opensearch-py = "^2.7.1"
 boto3 = "^1.35.29"
+websockets = "^13.1"
 
 
 [tool.poetry.group.dev.dependencies]

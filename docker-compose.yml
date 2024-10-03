@@ -5,12 +5,8 @@ services:
     build:
       context: .
       dockerfile: Dockerfile
-<<<<<<< HEAD
     env_file:
       - .env
-=======
-    container_name: ${DOCKER_CONTAINER_NAME}
->>>>>>> 179f9f31a656b3f31deff1084757a3e9c8cc5896
     ports:
       - "8000:8000"
     environment:
