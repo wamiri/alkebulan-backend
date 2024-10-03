@@ -2,7 +2,7 @@ from fastapi import APIRouter, Depends, WebSocket
 from fastapi.responses import HTMLResponse
 
 from app.chat.config import APP_URL
-from app.chat.utils import get_open_searcher, get_similarity_searcher
+from app.chat.utils import get_rag_chain, get_similarity_searcher
 
 router = APIRouter(
     prefix="/chat",
@@ -23,9 +23,9 @@ async def chat_similarity_searcher(websocket: WebSocket):
 
 @router.websocket("/open-search")
 async def chat_open_search(websocket: WebSocket):
-    open_searcher = get_open_searcher()
+    rag_chain = get_rag_chain()
     await websocket.accept()
     while True:
         text = await websocket.receive_text()
-        response = open_searcher.search_documents(text)
+        response = rag_chain.invoke(text)
         await websocket.send_text(f"Response: {response}")

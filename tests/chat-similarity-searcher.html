@@ -4,14 +4,14 @@
         <title>Chat</title>
     </head>
     <body>
-        <h1>OpenSearch Chat</h1>
+        <h1>SimilaritySearch Chat</h1>
         <form action="" onsubmit="sendMessage(event)">
             <input type="text" id="messageText" autocomplete="off" />
             <button>Send</button>
         </form>
         <ul id="messages"></ul>
         <script>
-            var ws = new WebSocket("ws://localhost:8000/chat/open-searcher");
+            var ws = new WebSocket("ws://localhost:8000/chat/similarity-search");
             ws.onmessage = function (event) {
                 {
                     var messages = document.getElementById("messages");
