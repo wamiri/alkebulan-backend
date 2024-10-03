@@ -79,6 +79,13 @@ class OpenSearcher:
         return self.client.search(body=q, index=self.index_name)
 
 
+open_searcher = OpenSearcher()
+
+
+def get_open_searcher():
+    return open_searcher
+
+
 class RAGChain:
     def __init__(self) -> None:
         # OpenSearch index
@@ -129,14 +136,15 @@ class RAGChain:
             timeout=60,
             stop=None,
         )
-        
+
         retriever = opensearch_index.as_retriever()
         question_answer_chain = create_stuff_documents_chain(llm, prompt)
         self.rag_chain = create_retrieval_chain(retriever, question_answer_chain)
-        
+
     def invoke(self, query: str):
         response = self.rag_chain.invoke({"input": query})
         return response["answer"]
+
 
 rag_chain = RAGChain()
 
