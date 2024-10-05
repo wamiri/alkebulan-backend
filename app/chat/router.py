@@ -37,5 +37,5 @@ async def chat_rag_chain(websocket: WebSocket):
     await websocket.accept()
     while True:
         text = await websocket.receive_text()
-        response = rag_chain.invoke(text)
+        response = rag_chain.query(text)
         await websocket.send_text(f"Response: {response}")
