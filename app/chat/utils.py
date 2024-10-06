@@ -4,9 +4,11 @@ import openai
 from langchain.chains import create_retrieval_chain
 from langchain.chains.combine_documents import create_stuff_documents_chain
 from langchain_anthropic import ChatAnthropic
+from langchain_community.document_loaders import TextLoader
 from langchain_community.vectorstores import OpenSearchVectorSearch
 from langchain_core.prompts import ChatPromptTemplate
 from langchain_openai import OpenAIEmbeddings
+from langchain_text_splitters import CharacterTextSplitter
 from openai.types import CreateEmbeddingResponse
 from opensearchpy import AWSV4SignerAuth, OpenSearch, RequestsHttpConnection
 from pydantic import SecretStr
@@ -73,7 +75,7 @@ class OpenSearcher:
             connection_class=RequestsHttpConnection,
             pool_maxsize=20,
         )
-        self.index_name = "finance_data"
+        self.index_name = "new_finance_index"
         self.openai_client = openai.Client(api_key=OPENAI_API_KEY)
 
     def _get_query_embedding(self, query: str):
@@ -97,7 +99,8 @@ class OpenSearcher:
                 },
             },
         )
-        top_hit_summary = response["hits"]["hits"][0]["_source"]["text"]
+
+        top_hit_summary = response["hits"]["hits"][0]["_source"]["text_segment"]
         return top_hit_summary
 
     def search_documents(self, query: str):
@@ -146,9 +149,7 @@ class RAGChain:
             session_token=credentials.token,
         )
 
-        self.index_name = "finance_data"
-        self.vector_field = "embedding"
-
+        self.index_name = "new_finance_index"
         self.vector_store = OpenSearchVectorSearch(
             opensearch_url=f"https://{AWS_OPENSEARCH_HOST}",
             embedding_function=embeddings,
@@ -160,34 +161,8 @@ class RAGChain:
             index_name=self.index_name,
         )
 
-        index_body = {
-            "settings": {"index.knn": True},
-            "mappings": {
-                "properties": {
-                    "vector_field": {
-                        "type": "knn_vector",
-                        "dimension": 1536,
-                        "method": {
-                            "engine": "faiss",
-                            "name": "hnsw",
-                            "space_type": "l2",
-                        },
-                    }
-                }
-            },
-        }
-        if not self.vector_store.client.indices.exists(index=self.index_name):
-            response = self.vector_store.client.create(self.index_name, body=index_body, id=1)
-            print(response)
-
     def query(self, query: str):
-        return self.vector_store.similarity_search(
-            query,
-            vector_field=self.vector_field,
-            text_field="text",
-            metadata_field="metadata",
-            search_type="approximate_search",
-        )
+        return self.vector_store.similarity_search(query, k=10, search_type="approximate_search", vector_field="vector_field")
 
 
 rag_chain = RAGChain()
