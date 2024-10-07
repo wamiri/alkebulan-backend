@@ -88,7 +88,7 @@ class OpenSearcher:
         response = self.opensearch_client.search(
             index=self.index_name,
             body={
-                "size": 2,
+                "size": 10,
                 "query": {
                     "knn": {
                         "embedding": {
@@ -100,8 +100,10 @@ class OpenSearcher:
             },
         )
 
-        top_hit_summary = response["hits"]["hits"][0]["_source"]["text_segment"]
-        return top_hit_summary
+        summary0 = response["hits"]["hits"][0]["_source"]["text_segment"]
+        summary1 = response["hits"]["hits"][1]["_source"]["text_segment"]
+        summary2 = response["hits"]["hits"][2]["_source"]["text_segment"]
+        return [summary0, summary1, summary2]
 
     def search_documents(self, query: str):
         embeddings = self._get_query_embedding(query)
@@ -115,13 +117,17 @@ class OpenSearcher:
                     "content": "Answer the following question:"
                     + query
                     + "by using the following text:"
-                    + response,
+                    + response[0]
+                    + "\n"
+                    + response[1]
+                    + "\n"
+                    + response[2],
                 },
             ],
         )
 
         choices = summary.choices
-        return choices
+        return choices[0].message.content
 
 
 open_searcher = OpenSearcher()
@@ -162,7 +168,9 @@ class RAGChain:
         )
 
     def query(self, query: str):
-        return self.vector_store.similarity_search(query, k=10, search_type="approximate_search", vector_field="vector_field")
+        return self.vector_store.similarity_search(
+            query, k=10, search_type="approximate_search", vector_field="vector_field"
+        )
 
 
 rag_chain = RAGChain()
