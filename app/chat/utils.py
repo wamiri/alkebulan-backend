@@ -60,8 +60,78 @@ def get_similarity_searcher():
     return similarity_searcher
 
 
+# class OpenSearcher:
+#     def __init__(self) -> None:
+#         host = AWS_OPENSEARCH_HOST
+#         region = AWS_OPENSEARCH_REGION
+#         service = "es"
+#         credentials = boto3.Session().get_credentials()
+#         auth = AWSV4SignerAuth(credentials, region, service)
+#         self.opensearch_client = OpenSearch(
+#             hosts=[{"host": host, "port": 443}],
+#             http_auth=auth,
+#             use_ssl=True,
+#             verify_certs=True,
+#             connection_class=RequestsHttpConnection,
+#             pool_maxsize=20,
+#         )
+#         self.index_name = "new_finance_index"
+#         self.openai_client = openai.Client(api_key=OPENAI_API_KEY)
+
+#     def _get_query_embedding(self, query: str):
+#         return self.openai_client.embeddings.create(
+#             input=query,
+#             model="text-embedding-ada-002",
+#         )
+
+#     def _get_kNN_vector_search(self, embeddings: CreateEmbeddingResponse):
+#         response = self.opensearch_client.search(
+#             index=self.index_name,
+#             body={
+#                 "size": 10,
+#                 "query": {
+#                     "knn": {
+#                         "embedding": {
+#                             "vector": embeddings.data[0].embedding,
+#                             "k": 10,
+#                         }
+#                     }
+#                 },
+#             },
+#         )
+
+#         summary0 = response["hits"]["hits"][0]["_source"]["text_segment"]
+#         summary1 = response["hits"]["hits"][1]["_source"]["text_segment"]
+#         summary2 = response["hits"]["hits"][2]["_source"]["text_segment"]
+#         return [summary0, summary1, summary2]
+
+#     def search_documents(self, query: str):
+#         embeddings = self._get_query_embedding(query)
+#         response = self._get_kNN_vector_search(embeddings)
+#         summary = self.openai_client.chat.completions.create(
+#             model="gpt-3.5-turbo",
+#             messages=[
+#                 {"role": "system", "content": "You are a helpful assistant."},
+#                 {
+#                     "role": "user",
+#                     "content": "Answer the following question:"
+#                     + query
+#                     + "by using the following text:"
+#                     + response[0]
+#                     + "\n"
+#                     + response[1]
+#                     + "\n"
+#                     + response[2],
+#                 },
+#             ],
+#         )
+
+#         choices = summary.choices
+#         return choices[0].message.content
+
+
 class OpenSearcher:
-    def __init__(self) -> None:
+    def __init__(self, index_name: str = "new_finance_index") -> None:
         host = AWS_OPENSEARCH_HOST
         region = AWS_OPENSEARCH_REGION
         service = "es"
@@ -75,53 +145,46 @@ class OpenSearcher:
             connection_class=RequestsHttpConnection,
             pool_maxsize=20,
         )
-        self.index_name = "new_finance_index"
+        self.index_name = index_name
+        self.embedding_model = "text-embedding-ada-002"
         self.openai_client = openai.Client(api_key=OPENAI_API_KEY)
 
     def _get_query_embedding(self, query: str):
         return self.openai_client.embeddings.create(
             input=query,
-            model="text-embedding-ada-002",
+            model=self.embedding_model,
         )
 
-    def _get_kNN_vector_search(self, embeddings: CreateEmbeddingResponse):
+    def _get_kNN_vector_search(self, embeddings: CreateEmbeddingResponse, top_k: int):
         response = self.opensearch_client.search(
             index=self.index_name,
             body={
-                "size": 10,
+                "size": top_k,
                 "query": {
                     "knn": {
                         "embedding": {
                             "vector": embeddings.data[0].embedding,
-                            "k": 10,
+                            "k": top_k,
                         }
                     }
                 },
             },
         )
+        summaries = [hit["_source"]["text_segment"] for hit in response["hits"]["hits"]]
+        return summaries
 
-        summary0 = response["hits"]["hits"][0]["_source"]["text_segment"]
-        summary1 = response["hits"]["hits"][1]["_source"]["text_segment"]
-        summary2 = response["hits"]["hits"][2]["_source"]["text_segment"]
-        return [summary0, summary1, summary2]
-
-    def search_documents(self, query: str):
+    def search_documents(self, query: str, top_k: int = 5):
         embeddings = self._get_query_embedding(query)
-        response = self._get_kNN_vector_search(embeddings)
+        response = self._get_kNN_vector_search(embeddings, top_k)
+        combined_text = "\n".join(response)
+
         summary = self.openai_client.chat.completions.create(
             model="gpt-3.5-turbo",
             messages=[
                 {"role": "system", "content": "You are a helpful assistant."},
                 {
                     "role": "user",
-                    "content": "Answer the following question:"
-                    + query
-                    + "by using the following text:"
-                    + response[0]
-                    + "\n"
-                    + response[1]
-                    + "\n"
-                    + response[2],
+                    "content": f"Answer the following question: {query} using the following text: {combined_text}",
                 },
             ],
         )
