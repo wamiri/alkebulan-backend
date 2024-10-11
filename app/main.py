@@ -2,7 +2,7 @@ from fastapi import FastAPI, WebSocket
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import FileResponse
 
-from app.chat.router import router as chat_router
+from app.rag.router import router as rag_router
 from app.users.router import router as users_router
 
 app = FastAPI()
@@ -16,7 +16,7 @@ app.add_middleware(
 
 
 app.include_router(users_router)
-app.include_router(chat_router)
+app.include_router(rag_router)
 
 
 @app.get("/ws-docs", tags=["Docs"])

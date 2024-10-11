@@ -1,16 +1,16 @@
 from fastapi import APIRouter, Depends, WebSocket
 from fastapi.responses import HTMLResponse
 
-from app.chat.config import APP_URL
-from app.chat.utils import (
+from app.rag.config import APP_URL
+from app.rag.utils import (
     get_os_vector_store,
     get_os_vector_store_langchain,
     get_qdrant_vector_store,
 )
 
 router = APIRouter(
-    prefix="/chat",
-    tags=["Chat"],
+    prefix="/rag",
+    tags=["RAG"],
     responses={401: {"description": "Unauthorized"}},
 )
 

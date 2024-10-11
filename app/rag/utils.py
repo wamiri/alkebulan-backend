@@ -17,7 +17,7 @@ from pydantic import SecretStr
 from qdrant_client import QdrantClient
 from requests_aws4auth import AWS4Auth
 
-from app.chat.config import (
+from app.rag.config import (
     ANTHROPIC_API_KEY,
     AWS_ACCESS_KEY_ID,
     AWS_OPENSEARCH_HOST,
