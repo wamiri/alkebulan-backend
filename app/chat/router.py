@@ -2,7 +2,11 @@ from fastapi import APIRouter, Depends, WebSocket
 from fastapi.responses import HTMLResponse
 
 from app.chat.config import APP_URL
-from app.chat.utils import get_open_searcher, get_rag_chain, get_similarity_searcher
+from app.chat.utils import (
+    get_os_vector_store,
+    get_os_vector_store_langchain,
+    get_qdrant_vector_store,
+)
 
 router = APIRouter(
     prefix="/chat",
@@ -11,31 +15,31 @@ router = APIRouter(
 )
 
 
-@router.websocket("/similarity-search")
-async def chat_similarity_searcher(websocket: WebSocket):
-    similarity_searcher = get_similarity_searcher()
+@router.websocket("/qdrant")
+async def chat_qdrant(websocket: WebSocket):
+    qdrant_vector_store = get_qdrant_vector_store()
     await websocket.accept()
     while True:
         text = await websocket.receive_text()
-        response = similarity_searcher.similarity_search(text)
+        response = qdrant_vector_store.similarity_search(text)
         await websocket.send_text(f"Response: {response}")
 
 
 @router.websocket("/open-search")
 async def chat_open_search(websocket: WebSocket):
-    open_searcher = get_open_searcher()
+    os_vector_store = get_os_vector_store()
     await websocket.accept()
     while True:
         text = await websocket.receive_text()
-        response = open_searcher.search_documents(text)
+        response = os_vector_store.search_documents(text)
         await websocket.send_text(f"Response: {response}")
 
 
-@router.websocket("/rag-chain")
-async def chat_rag_chain(websocket: WebSocket):
-    rag_chain = get_rag_chain()
+@router.websocket("/open-search-langchain")
+async def chat_open_search_langchain(websocket: WebSocket):
+    os_vector_store_langchain = get_os_vector_store_langchain()
     await websocket.accept()
     while True:
         text = await websocket.receive_text()
-        response = rag_chain.query(text)
+        response = os_vector_store_langchain.query(text)
         await websocket.send_text(f"Response: {response}")

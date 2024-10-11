@@ -1,5 +1,4 @@
 import boto3
-from numpy import gcd
 import openai
 from langchain.chains import create_retrieval_chain
 from langchain.chains.combine_documents import create_stuff_documents_chain
@@ -9,6 +8,7 @@ from langchain_community.vectorstores import OpenSearchVectorSearch
 from langchain_core.prompts import ChatPromptTemplate
 from langchain_openai import OpenAIEmbeddings
 from langchain_text_splitters import CharacterTextSplitter
+from numpy import gcd
 from openai.types import CreateEmbeddingResponse
 from opensearchpy import AWSV4SignerAuth, OpenSearch, RequestsHttpConnection
 from pydantic import SecretStr
@@ -27,7 +27,7 @@ from app.chat.config import (
 )
 
 
-class SimilaritySearcher:
+class QDrantVectorStore:
     def __init__(self) -> None:
         self.qdrant_client = QdrantClient(
             url=QDRANT_API_URL,
@@ -53,14 +53,14 @@ class SimilaritySearcher:
         return results
 
 
-similarity_searcher = SimilaritySearcher()
+qdrant_vector_store = QDrantVectorStore()
 
 
-def get_similarity_searcher():
-    return similarity_searcher
+def get_qdrant_vector_store():
+    return qdrant_vector_store
 
 
-class OpenSearcher:
+class OpenSearchVectorStore:
     def __init__(self, index_name: str = "new_finance_index") -> None:
         host = AWS_OPENSEARCH_HOST
         region = AWS_OPENSEARCH_REGION
@@ -106,7 +106,7 @@ class OpenSearcher:
     def search_documents(self, query: str, top_k: int = 5):
         embeddings = self._get_query_embedding(query)
         response = self._get_kNN_vector_search(embeddings, top_k)
-        combined_text = "\n".join(response)
+        combined_text = "\n\n".join(response)
 
         summary = self.openai_client.chat.completions.create(
             model="gpt-3.5-turbo",
@@ -123,14 +123,14 @@ class OpenSearcher:
         return choices[0].message.content
 
 
-open_searcher = OpenSearcher()
+os_vector_store = OpenSearchVectorStore()
 
 
-def get_open_searcher():
-    return open_searcher
+def get_os_vector_store():
+    return os_vector_store
 
 
-class RAGChain:
+class OpenSearchVectorStoreLangChain:
     def __init__(self) -> None:
         embeddings = OpenAIEmbeddings(api_key=SecretStr(OPENAI_API_KEY))
         service = "es"
@@ -148,26 +148,61 @@ class RAGChain:
             session_token=credentials.token,
         )
 
-        self.index_name = "new_finance_index"
-        self.vector_store = OpenSearchVectorSearch(
+        self.finance_index_vector_store = OpenSearchVectorSearch(
             opensearch_url=f"https://{AWS_OPENSEARCH_HOST}",
             embedding_function=embeddings,
             http_auth=auth,
             timeout=60,
             use_ssl=True,
             verify_certs=True,
+            http_compress=True,
             connection_class=RequestsHttpConnection,
-            index_name=self.index_name,
+            index_name="new_finance_index",
+        )
+
+        self.table_index_vector_store = OpenSearchVectorSearch(
+            opensearch_url=f"https://{AWS_OPENSEARCH_HOST}",
+            embedding_function=embeddings,
+            http_auth=auth,
+            timeout=60,
+            use_ssl=True,
+            verify_certs=True,
+            http_compress=True,
+            connection_class=RequestsHttpConnection,
+            index_name="table_index",
+        )
+
+    def get_docs_from_finance_index(self, query: str):
+        return self.finance_index_vector_store.similarity_search(
+            query,
+            k=3,
+            search_type="script_scoring",
+            space_type="cosinesimil",
+            vector_field="embedding",
+            text_field="text_segment",
+            metadata_field="metadata",
+        )
+
+    def get_docs_from_table_index(self, query: str):
+        return self.finance_index_vector_store.similarity_search(
+            query,
+            k=3,
+            search_type="script_scoring",
+            space_type="cosinesimil",
+            vector_field="embedding",
+        text_field="text_segment",
+            metadata_field="metadata",
         )
 
     def query(self, query: str):
-        return self.vector_store.similarity_search(
-            query, k=10, search_type="approximate_search", vector_field="vector_field"
-        )
+        finance_index_docs = self.get_docs_from_finance_index(query)
+        table_index_docs = self.get_docs_from_table_index(query)
+        
+        return [finance_index_docs, table_index_docs]
 
 
-rag_chain = RAGChain()
+os_vector_store_langchain = OpenSearchVectorStoreLangChain()
 
 
-def get_rag_chain():
-    return rag_chain
+def get_os_vector_store_langchain():
+    return os_vector_store_langchain

@@ -4,14 +4,16 @@
         <title>Chat</title>
     </head>
     <body>
-        <h1>RAG Chain Chat</h1>
+        <h1>OpenSearch LangChain</h1>
         <form action="" onsubmit="sendMessage(event)">
             <input type="text" id="messageText" autocomplete="off" />
             <button>Send</button>
         </form>
         <ul id="messages"></ul>
         <script>
-            var ws = new WebSocket("ws://localhost:8000/chat/rag-chain");
+            var ws = new WebSocket(
+                "ws://localhost:8000/chat/open-search-langchain",
+            );
             ws.onmessage = function (event) {
                 {
                     var messages = document.getElementById("messages");
