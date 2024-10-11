@@ -1,6 +1,6 @@
-FROM python:3.10-slim AS builder
+FROM python:3.10-slim-buster
 
-RUN python -m pip install --upgrade pip && pip install poetry==1.8.3
+RUN pip install poetry==1.8.3
 
 # Environment variables
 # PYTHONDONTWRITEBYTECODE=1 prevents Python from writing .pyc files
@@ -19,13 +19,13 @@ ENV PYTHONDONTWRITEBYTECODE=1 \
 WORKDIR /app
 
 COPY pyproject.toml poetry.lock ./
+
+# Install the dependencies listed in pyproject.toml and poetry.lock
+# --without dev means we only install the production dependencies (omit the development dependencies)
+# --no-root means we are not installing the current project as a package (which is typical if the project is not intended to be packaged)
+# After installing, we remove the Poetry cache to save space in the final image
 RUN poetry install --without dev --no-root && rm -rf $POETRY_CACHE_DIR
 
-COPY ./app .
-
-FROM python:3.10-slim AS runner
-
-WORKDIR /app
-COPY --from=builder /app /app
+COPY app ./app
 
 CMD ["poetry", "run", "uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000"]
