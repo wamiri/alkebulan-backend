@@ -1,5 +1,7 @@
 import boto3
 import openai
+import requests
+from flashrank import Ranker, RerankRequest
 from langchain.chains import create_retrieval_chain
 from langchain.chains.combine_documents import create_stuff_documents_chain
 from langchain_anthropic import ChatAnthropic
@@ -148,7 +150,7 @@ class OpenSearchVectorStoreLangChain:
             session_token=credentials.token,
         )
 
-        self.finance_index_vector_store = OpenSearchVectorSearch(
+        self.vector_store = OpenSearchVectorSearch(
             opensearch_url=f"https://{AWS_OPENSEARCH_HOST}",
             embedding_function=embeddings,
             http_auth=auth,
@@ -160,22 +162,11 @@ class OpenSearchVectorStoreLangChain:
             index_name="new_finance_index",
         )
 
-        self.table_index_vector_store = OpenSearchVectorSearch(
-            opensearch_url=f"https://{AWS_OPENSEARCH_HOST}",
-            embedding_function=embeddings,
-            http_auth=auth,
-            timeout=60,
-            use_ssl=True,
-            verify_certs=True,
-            http_compress=True,
-            connection_class=RequestsHttpConnection,
-            index_name="table_index",
-        )
+        self.ranker = Ranker(max_length=1024)
 
-    def _get_docs_from_finance_index(self, query: str):
-        return self.finance_index_vector_store.similarity_search(
+    def get_documents(self, query: str):
+        return self.vector_store.similarity_search(
             query,
-            k=3,
             search_type="script_scoring",
             space_type="cosinesimil",
             vector_field="embedding",
@@ -183,21 +174,19 @@ class OpenSearchVectorStoreLangChain:
             metadata_field="metadata",
         )
 
-    def _get_docs_from_table_index(self, query: str):
-        return self.finance_index_vector_store.similarity_search(
-            query,
-            k=3,
-            search_type="script_scoring",
-            space_type="cosinesimil",
-            vector_field="embedding",
-            text_field="text_segment",
-            metadata_field="metadata",
-        )
+    def rerank(self, query, documents, top_k=3):
+        passages = list()
+        for i, document in enumerate(documents):
+            passage = {
+                "id": i + 1,
+                "text": document.page_content,
+                "meta": {"filename": document.metadata["filename"]},
+            }
+            passages.append(passage)
 
-    def get_docs(self, query: str):
-        finance_index_docs = self._get_docs_from_finance_index(query)
-        table_index_docs = self._get_docs_from_table_index(query)
-        return finance_index_docs + table_index_docs
+        rerank_request = RerankRequest(query=query, passages=passages)
+        results = self.ranker.rerank(rerank_request)
+        return results[:top_k]
 
     def rag(self, query):
         llm = ChatAnthropic(
@@ -207,22 +196,26 @@ class OpenSearchVectorStoreLangChain:
             stop=None,
         )
 
-        documents = self.get_docs(query)
-        information = [document.page_content for document in documents]
-        information_text = "\n\n".join(information)
+        system_prompt = (
+            "Using the following information provided below, please answer the user's query.\
+                         If the information is not sufficient to answer the query, please say so.\
+                         Include the filename in the response.\
+                         Relevant information:\n"
+        )
 
-        messages = [
-            (
-                "system",
-                f"Using the following information: {information_text}, please answer the user's query.\
-                 If the information is not sufficient to answer the query, please say so.\
-                 Include the filename in the response.",
-            ),
-            ("human", query),
-        ]
+        documents = self.get_documents(query)
+        reranked_documents = self.rerank(query, documents)
 
+        for i, document in enumerate(reranked_documents):
+            document_information = f"{i + 1}. Filename: {document['meta']['filename']} Text: {document['text']}\n"
+            system_prompt += document_information
+
+        user_prompt = f"User query: {query}"
+
+        messages = [("system", system_prompt), ("human", user_prompt)]
         response = llm.invoke(messages)
-        return response
+
+        return response.json()
 
 
 os_vector_store_langchain = OpenSearchVectorStoreLangChain()
