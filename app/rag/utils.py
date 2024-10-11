@@ -161,7 +161,7 @@ class OpenSearchVectorStoreLangChain:
             connection_class=RequestsHttpConnection,
             index_name="new_finance_index",
         )
-        
+
         self.table_index_vector_store = OpenSearchVectorSearch(
             opensearch_url=f"https://{AWS_OPENSEARCH_HOST}",
             embedding_function=embeddings,
@@ -175,7 +175,7 @@ class OpenSearchVectorStoreLangChain:
         )
 
         self.ranker = Ranker(max_length=1024)
-        
+
     def _get_documents_from_finance_index(self, query):
         return self.finance_index_vector_store.similarity_search(
             query,
@@ -185,7 +185,7 @@ class OpenSearchVectorStoreLangChain:
             text_field="text_segment",
             metadata_field="metadata",
         )
-        
+
     def _get_documents_from_table_index(self, query):
         return self.table_index_vector_store.similarity_search(
             query,
@@ -195,12 +195,11 @@ class OpenSearchVectorStoreLangChain:
             text_field="text",
             metadata_field="metadata",
         )
-    
 
     def get_documents(self, query: str):
         finance_index_documents = self._get_documents_from_finance_index(query)
         table_index_documents = self._get_documents_from_table_index(query)
-        
+
         return finance_index_documents + table_index_documents
 
     def rerank(self, query, documents, top_k=10):

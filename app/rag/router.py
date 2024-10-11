@@ -11,7 +11,6 @@ from app.rag.utils import (
 router = APIRouter(
     prefix="/rag",
     tags=["RAG"],
-    responses={401: {"description": "Unauthorized"}},
 )
 
 
