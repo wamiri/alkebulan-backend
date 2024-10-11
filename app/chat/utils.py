@@ -172,7 +172,7 @@ class OpenSearchVectorStoreLangChain:
             index_name="table_index",
         )
 
-    def get_docs_from_finance_index(self, query: str):
+    def _get_docs_from_finance_index(self, query: str):
         return self.finance_index_vector_store.similarity_search(
             query,
             k=3,
@@ -183,22 +183,46 @@ class OpenSearchVectorStoreLangChain:
             metadata_field="metadata",
         )
 
-    def get_docs_from_table_index(self, query: str):
+    def _get_docs_from_table_index(self, query: str):
         return self.finance_index_vector_store.similarity_search(
             query,
             k=3,
             search_type="script_scoring",
             space_type="cosinesimil",
             vector_field="embedding",
-        text_field="text_segment",
+            text_field="text_segment",
             metadata_field="metadata",
         )
 
-    def query(self, query: str):
-        finance_index_docs = self.get_docs_from_finance_index(query)
-        table_index_docs = self.get_docs_from_table_index(query)
-        
-        return [finance_index_docs, table_index_docs]
+    def get_docs(self, query: str):
+        finance_index_docs = self._get_docs_from_finance_index(query)
+        table_index_docs = self._get_docs_from_table_index(query)
+        return finance_index_docs + table_index_docs
+
+    def rag(self, query):
+        llm = ChatAnthropic(
+            api_key=SecretStr(ANTHROPIC_API_KEY),
+            model_name="claude-3-sonnet-20240229",
+            timeout=None,
+            stop=None,
+        )
+
+        documents = self.get_docs(query)
+        information = [document.page_content for document in documents]
+        information_text = "\n\n".join(information)
+
+        messages = [
+            (
+                "system",
+                f"Using the following information: {information_text}, please answer the user's query.\
+                 If the information is not sufficient to answer the query, please say so.\
+                 Include the filename in the response.",
+            ),
+            ("human", query),
+        ]
+
+        response = llm.invoke(messages)
+        return response
 
 
 os_vector_store_langchain = OpenSearchVectorStoreLangChain()

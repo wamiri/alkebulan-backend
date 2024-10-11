@@ -41,5 +41,5 @@ async def chat_open_search_langchain(websocket: WebSocket):
     await websocket.accept()
     while True:
         text = await websocket.receive_text()
-        response = os_vector_store_langchain.query(text)
+        response = os_vector_store_langchain.rag(text)
         await websocket.send_text(f"Response: {response}")
