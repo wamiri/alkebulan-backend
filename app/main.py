@@ -5,7 +5,7 @@ from fastapi.responses import FileResponse
 from app.rag.router import router as rag_router
 from app.users.router import router as users_router
 
-app = FastAPI()
+app = FastAPI(title="Alkebulan Backend API Specification")
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
@@ -17,8 +17,3 @@ app.add_middleware(
 
 app.include_router(users_router)
 app.include_router(rag_router)
-
-
-@app.get("/ws-docs", tags=["Docs"])
-async def ws_docs():
-    return FileResponse("./docs/ws-docs.html")

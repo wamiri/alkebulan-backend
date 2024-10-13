@@ -11,7 +11,7 @@
         </form>
         <ul id="messages"></ul>
         <script>
-            var ws = new WebSocket("ws://localhost:8000/chat/open-search");
+            var ws = new WebSocket("ws://localhost:8000/rag/open-search");
             ws.onmessage = function (event) {
                 {
                     var messages = document.getElementById("messages");
