@@ -16,7 +16,10 @@ ENV PYTHONDONTWRITEBYTECODE=1 \
     POETRY_VIRTUALENVS_CREATE=1 \
     POETRY_CACHE_DIR=/tmp/poetry_cache
 
+RUN groupadd -r appgroup && useradd -r -g appgroup appuser
+
 WORKDIR /app
+RUN chown -R appuser:appgroup /app
 
 COPY pyproject.toml poetry.lock ./
 
@@ -27,5 +30,7 @@ COPY pyproject.toml poetry.lock ./
 RUN poetry install --without dev --no-root && rm -rf $POETRY_CACHE_DIR
 
 COPY app ./app
+RUN chown -R appuser:appgroup /app
+USER appuser
 
 CMD ["poetry", "run", "uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000"]
