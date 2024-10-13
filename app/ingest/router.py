@@ -7,8 +7,6 @@ from fastapi.routing import APIRouter
 router = APIRouter(prefix="/ingest", tags=["Ingest"])
 
 
-@router.route("/upload-files")
-async def upload_files(
-    files: Annotated[list[UploadFile], File()],
-):
+@router.post("/files/")
+async def upload_files(files: list[UploadFile]):
     return {"filenames": [file.filename for file in files]}

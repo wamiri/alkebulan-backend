@@ -1,0 +1,61 @@
+<!doctype html>
+<html>
+    <head>
+        <title>RAG Chat with OpenSearch via LangChain</title>
+        <link
+            rel="stylesheet"
+            href="https://cdnjs.cloudflare.com/ajax/libs/skeleton/2.0.4/skeleton.min.css"
+        />
+    </head>
+    <body>
+        <div style="text-align: center">
+            <h1>OpenSearch via LangChain</h1>
+            <form action="" onsubmit="sendMessage(event)">
+                <input
+                    type="text"
+                    id="query"
+                    placeholder="Enter your query..."
+                    autocomplete="off"
+                    required
+                />
+                <button class="button-primary">Send</button>
+            </form>
+            <ul id="messages"></ul>
+        </div>
+
+        <script>
+            var ws = new WebSocket("ws://localhost:8000/rag/open-search-langchain");
+            ws.onmessage = function (event) {
+                {
+                    addAuthor("AI");
+                    addMessage(event.data);
+                }
+            };
+
+            function addAuthor(author) {
+                const messages = document.getElementById("messages");
+                const message = document.createElement("h4");
+                const content = document.createTextNode(author);
+                message.appendChild(content);
+                messages.appendChild(message);
+            }
+
+            function addMessage(text) {
+                const messages = document.getElementById("messages");
+                const message = document.createElement("li");
+                const content = document.createTextNode(text);
+                message.appendChild(content);
+                messages.appendChild(message);
+            }
+
+            function sendMessage(event) {
+                const query = document.getElementById("query");
+                addAuthor("User");
+                addMessage(query.value);
+                ws.send(query.value);
+                query.value = "";
+                event.preventDefault();
+            }
+        </script>
+    </body>
+</html>

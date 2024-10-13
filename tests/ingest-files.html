@@ -1,0 +1,22 @@
+<!doctype html>
+<html>
+    <head>
+        <title>RAG Chat with OpenSearch via LangChain</title>
+        <link
+            rel="stylesheet"
+            href="https://cdnjs.cloudflare.com/ajax/libs/skeleton/2.0.4/skeleton.min.css"
+        />
+    </head>
+    <body>
+        <div style="text-align: center">
+            <form
+                action="http://localhost:8000/ingest/files/"
+                enctype="multipart/form-data"
+                method="post"
+            >
+                <input id="files" name="files" type="file" multiple />
+                <input type="submit" />
+            </form>
+        </div>
+    </body>
+</html>
