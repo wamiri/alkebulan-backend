@@ -67,36 +67,46 @@ jobs:
         port: 22
         passphrase: ${{ secrets.EC2_SSH_PASSPHRASE }}
         script: |
+          set -e
+          echo "Starting deployment process..."
+
+          echo "Logging into ECR..."
           aws ecr get-login-password --region us-east-2 | docker login --username AWS --password-stdin $ECR_REGISTRY
+          
+          echo "Pulling new image..."
           docker pull $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
 
           if docker image inspect $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG > /dev/null 2>&1; then
-            docker-compose down
+            echo "Stopping and removing existing containers..."
+            docker-compose down || true
 
-            docker-compose build
+            cat << EOF > .env
+            DOCKER_IMAGE_NAME=$ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
+            DOCKER_CONTAINER_NAME=$ECR_REPOSITORY
+            QDRANT_API_URL=$QDRANT_API_URL
+            QDRANT_API_KEY=$QDRANT_API_KEY
+            OPENAI_API_KEY=$OPENAI_API_KEY
+            APP_URL=$APP_URL
+            ANTHROPIC_API_KEY=$ANTHROPIC_API_KEY
+            UNSTRUCTURED_API_KEY=$UNSTRUCTURED_API_KEY
+            UNSTRUCTURED_API_URL=$UNSTRUCTURED_API_URL
+            PASSWORD_SECRET_KEY=$PASSWORD_SECRET_KEY
+            PASSWORD_HASHING_ALGORITHM=$PASSWORD_HASHING_ALGORITHM
+            ACCESS_TOKEN_EXPIRE_MINUTES=$ACCESS_TOKEN_EXPIRE_MINUTES
+            USER_SERVICE_PORT=$USER_SERVICE_PORT
+            CHAT_SERVICE_HOST=$CHAT_SERVICE_HOST
+            DATABASE_URL=$DATABASE_URL
+            AWS_OPENSEARCH_HOST=$AWS_OPENSEARCH_HOST
+            AWS_OPENSEARCH_REGION=$AWS_OPENSEARCH_REGION
+            EOF
 
-            echo "DOCKER_IMAGE_NAME=$ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG" > .env
-            echo "DOCKER_CONTAINER_NAME=$ECR_REPOSITORY" >> .env
-            echo "QDRANT_API_URL=$QDRANT_API_URL" >> .env
-            echo "QDRANT_API_KEY=$QDRANT_API_KEY" >> .env
-            echo "OPENAI_API_KEY=$OPENAI_API_KEY" >> .env
-            echo "APP_URL=$APP_URL" >> .env
-            echo "ANTHROPIC_API_KEY=$ANTHROPIC_API_KEY" >> .env
-            echo "UNSTRUCTURED_API_KEY=$UNSTRUCTURED_API_KEY" >> .env
-            echo "UNSTRUCTURED_API_URL=$UNSTRUCTURED_API_URL" >> .env
-            echo "PASSWORD_SECRET_KEY=$PASSWORD_SECRET_KEY" >> .env
-            echo "PASSWORD_HASHING_ALGORITHM=$PASSWORD_HASHING_ALGORITHM" >> .env
-            echo "ACCESS_TOKEN_EXPIRE_MINUTES=$ACCESS_TOKEN
-            echo "USER_SERVICE_PORT=$USER_SERVICE_PORT" >> .env
-            echo "CHAT_SERVICE_HOST=$CHAT_SERVICE_HOST" >> .env
-            echo "DATABASE_URL=$DATABASE_URL" >> .env
-            echo "AWS_OPENSEARCH_HOST=$AWS_OPENSEARCH_HOST" >> .env
-            echo "AWS_OPENSEARCH_REGION=$AWS_OPENSEARCH_REGION" >> .env
-
+            echo "Starting new containers..."
             docker-compose up -d
 
             echo "Deployment completed. Container logs:"
             docker-compose logs -f
+
+            echo "Deployment completed."
           else
             echo "Image not found in ECR. Deployment failed."
           fi
