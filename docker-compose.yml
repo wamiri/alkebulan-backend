@@ -9,8 +9,3 @@ services:
       - .env
     ports:
       - "8000:8000"
-    environment:
-      - QDRANT_API_URL=${QDRANT_API_URL}
-      - QDRANT_API_KEY=${QDRANT_API_KEY}
-      - OPENAI_API_KEY=${OPENAI_API_KEY}
-      - APP_URL=${APP_URL}

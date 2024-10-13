@@ -49,6 +49,17 @@ jobs:
         QDRANT_API_KEY: ${{ secrets.QDRANT_API_KEY }}
         OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
         APP_URL: ${{ secrets.APP_URL }}
+        ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+        UNSTRUCTURED_API_KEY: ${{ secrets.UNSTRUCTURED_API_KEY }}
+        UNSTRUCTURED_API_URL: ${{ secrets.UNSTRUCTURED_API_URL }}
+        PASSWORD_SECRET_KEY: ${{ secrets.PASSWORD_SECRET_KEY }}
+        PASSWORD_HASHING_ALGORITHM: ${{ secrets.PASSWORD_HASHING_ALGORITHM }}
+        ACCESS_TOKEN_EXPIRE_MINUTES: ${{ secrets.ACCESS_TOKEN_EXPIRE_MINUTES }}
+        USER_SERVICE_PORT: ${{ secrets.USER_SERVICE_PORT }}
+        CHAT_SERVICE_HOST: ${{ secrets.CHAT_SERVICE_HOST }}
+        DATABASE_URL: ${{ secrets.DATABASE_URL }}
+        AWS_OPENSEARCH_HOST: ${{ secrets.AWS_OPENSEARCH_HOST }}
+        AWS_OPENSEARCH_REGION: ${{ secrets.AWS_OPENSEARCH_REGION }}
       with:
         host: ${{ secrets.EC2_HOST }}
         username: ubuntu
@@ -68,6 +79,17 @@ jobs:
             echo "QDRANT_API_KEY=$QDRANT_API_KEY" >> .env
             echo "OPENAI_API_KEY=$OPENAI_API_KEY" >> .env
             echo "APP_URL=$APP_URL" >> .env
+            echo "ANTHROPIC_API_KEY=$ANTHROPIC_API_KEY" >> .env
+            echo "UNSTRUCTURED_API_KEY=$UNSTRUCTURED_API_KEY" >> .env
+            echo "UNSTRUCTURED_API_URL=$UNSTRUCTURED_API_URL" >> .env
+            echo "PASSWORD_SECRET_KEY=$PASSWORD_SECRET_KEY" >> .env
+            echo "PASSWORD_HASHING_ALGORITHM=$PASSWORD_HASHING_ALGORITHM" >> .env
+            echo "ACCESS_TOKEN_EXPIRE_MINUTES=$ACCESS_TOKEN
+            echo "USER_SERVICE_PORT=$USER_SERVICE_PORT" >> .env
+            echo "CHAT_SERVICE_HOST=$CHAT_SERVICE_HOST" >> .env
+            echo "DATABASE_URL=$DATABASE_URL" >> .env
+            echo "AWS_OPENSEARCH_HOST=$AWS_OPENSEARCH_HOST" >> .env
+            echo "AWS_OPENSEARCH_REGION=$AWS_OPENSEARCH_REGION" >> .env
 
             docker-compose up -d
 
