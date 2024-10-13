@@ -29,39 +29,6 @@ from app.rag.config import (
 )
 
 
-class QDrantVectorStore:
-    def __init__(self) -> None:
-        self.qdrant_client = QdrantClient(
-            url=QDRANT_API_URL,
-            api_key=QDRANT_API_KEY,
-        )
-        self.openai_client = openai.Client(api_key=OPENAI_API_KEY)
-
-    def similarity_search(self, text):
-        embeddings = (
-            self.openai_client.embeddings.create(
-                model="text-embedding-ada-002",
-                input=text,
-            )
-            .data[0]
-            .embedding
-        )
-        results = self.qdrant_client.search(
-            collection_name="winter_sports",
-            query_vector=embeddings,
-            limit=5,
-        )
-
-        return results
-
-
-qdrant_vector_store = QDrantVectorStore()
-
-
-def get_qdrant_vector_store():
-    return qdrant_vector_store
-
-
 class OpenSearchVectorStore:
     def __init__(self, index_name: str = "new_finance_index") -> None:
         host = AWS_OPENSEARCH_HOST
@@ -123,13 +90,6 @@ class OpenSearchVectorStore:
 
         choices = summary.choices
         return choices[0].message.content
-
-
-os_vector_store = OpenSearchVectorStore()
-
-
-def get_os_vector_store():
-    return os_vector_store
 
 
 class OpenSearchVectorStoreLangChain:
@@ -246,8 +206,27 @@ class OpenSearchVectorStoreLangChain:
         return response.json()
 
 
-os_vector_store_langchain = OpenSearchVectorStoreLangChain()
+class QDrantVectorStore:
+    def __init__(self) -> None:
+        self.qdrant_client = QdrantClient(
+            url=QDRANT_API_URL,
+            api_key=QDRANT_API_KEY,
+        )
+        self.openai_client = openai.Client(api_key=OPENAI_API_KEY)
 
+    def similarity_search(self, text):
+        embeddings = (
+            self.openai_client.embeddings.create(
+                model="text-embedding-ada-002",
+                input=text,
+            )
+            .data[0]
+            .embedding
+        )
+        results = self.qdrant_client.search(
+            collection_name="winter_sports",
+            query_vector=embeddings,
+            limit=5,
+        )
 
-def get_os_vector_store_langchain():
-    return os_vector_store_langchain
+        return results

@@ -2,7 +2,7 @@ from fastapi import APIRouter, Depends, WebSocket
 from fastapi.responses import HTMLResponse
 
 from app.rag.config import APP_URL
-from app.rag.utils import (
+from app.rag.dependencies import (
     get_os_vector_store,
     get_os_vector_store_langchain,
     get_qdrant_vector_store,
