@@ -73,6 +73,8 @@ jobs:
           if docker image inspect $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG > /dev/null 2>&1; then
             docker-compose down
 
+            docker-compose build
+
             echo "DOCKER_IMAGE_NAME=$ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG" > .env
             echo "DOCKER_CONTAINER_NAME=$ECR_REPOSITORY" >> .env
             echo "QDRANT_API_URL=$QDRANT_API_URL" >> .env
