@@ -1,8 +1,14 @@
+import json
+
+from typing import Annotated
 from fastapi import APIRouter, Depends, WebSocket
 from fastapi.responses import HTMLResponse
 
 from app.rag.config import APP_URL
 from app.rag.dependencies import (
+    OpenSearchVectorStore,
+    OpenSearchVectorStoreLangChain,
+    QDrantVectorStore,
     get_os_vector_store,
     get_os_vector_store_langchain,
     get_qdrant_vector_store,
@@ -15,8 +21,10 @@ router = APIRouter(
 
 
 @router.websocket("/qdrant")
-async def chat_qdrant(websocket: WebSocket):
-    qdrant_vector_store = get_qdrant_vector_store()
+async def chat_qdrant(
+    websocket: WebSocket,
+    qdrant_vector_store: Annotated[QDrantVectorStore, Depends(get_qdrant_vector_store)],
+):
     await websocket.accept()
     while True:
         text = await websocket.receive_text()
@@ -35,8 +43,10 @@ async def qdrant():
 
 
 @router.websocket("/open-search")
-async def chat_open_search(websocket: WebSocket):
-    os_vector_store = get_os_vector_store()
+async def chat_open_search(
+    websocket: WebSocket,
+    os_vector_store: Annotated[OpenSearchVectorStore, Depends(get_os_vector_store)],
+):
     await websocket.accept()
     while True:
         text = await websocket.receive_text()
@@ -55,13 +65,19 @@ async def open_search():
 
 
 @router.websocket("/open-search-langchain")
-async def chat_open_search_langchain(websocket: WebSocket):
-    os_vector_store_langchain = get_os_vector_store_langchain()
+async def chat_open_search_langchain(
+    websocket: WebSocket,
+    os_vector_store_langchain: Annotated[
+        OpenSearchVectorStoreLangChain,
+        Depends(get_os_vector_store_langchain),
+    ],
+):
     await websocket.accept()
     while True:
         text = await websocket.receive_text()
-        response = os_vector_store_langchain.rag(text)
-        await websocket.send_text(response)
+        response = json.loads(os_vector_store_langchain.rag(text))
+        reply = response["content"]
+        await websocket.send_text(reply)
 
 
 @router.get("/open-search-langchain")
