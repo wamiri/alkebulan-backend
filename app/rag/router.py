@@ -75,7 +75,7 @@ async def chat_open_search_langchain(
     await websocket.accept()
     while True:
         text = await websocket.receive_text()
-        response = json.loads(os_vector_store_langchain.rag(text))
+        response = json.loads(await os_vector_store_langchain.rag(text))
         reply = response["content"]
         await websocket.send_text(reply)
 

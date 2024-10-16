@@ -1,3 +1,5 @@
+import asyncio
+
 import boto3
 import openai
 import requests
@@ -136,8 +138,8 @@ class OpenSearchVectorStoreLangChain:
 
         self.ranker = Ranker(max_length=1024)
 
-    def _get_documents_from_finance_index(self, query):
-        return self.finance_index_vector_store.similarity_search(
+    async def get_documents_from_finance_index(self, query):
+        return await self.finance_index_vector_store.asimilarity_search(
             query,
             search_type="script_scoring",
             space_type="cosinesimil",
@@ -146,8 +148,8 @@ class OpenSearchVectorStoreLangChain:
             metadata_field="metadata",
         )
 
-    def _get_documents_from_table_index(self, query):
-        return self.table_index_vector_store.similarity_search(
+    async def get_documents_from_table_index(self, query):
+        return await self.table_index_vector_store.asimilarity_search(
             query,
             search_type="script_scoring",
             space_type="cosinesimil",
@@ -156,13 +158,15 @@ class OpenSearchVectorStoreLangChain:
             metadata_field="metadata",
         )
 
-    def get_documents(self, query: str):
-        finance_index_documents = self._get_documents_from_finance_index(query)
-        table_index_documents = self._get_documents_from_table_index(query)
+    async def get_documents(self, query: str):
+        finance_index_documents, table_index_documents = await asyncio.gather(
+            self.get_documents_from_finance_index(query),
+            self.get_documents_from_table_index(query),
+        )
 
         return finance_index_documents + table_index_documents
 
-    def rerank(self, query, documents, top_k=10):
+    async def rerank(self, query, documents, top_k=10):
         passages = list()
         for i, document in enumerate(documents):
             passage = {
@@ -176,7 +180,7 @@ class OpenSearchVectorStoreLangChain:
         results = self.ranker.rerank(rerank_request)
         return results[:top_k]
 
-    def rag(self, query):
+    async def rag(self, query):
         llm = ChatAnthropic(
             api_key=SecretStr(ANTHROPIC_API_KEY),
             model_name="claude-3-sonnet-20240229",
@@ -195,8 +199,8 @@ class OpenSearchVectorStoreLangChain:
                          Relevant information:\n"
         )
 
-        documents = self.get_documents(query)
-        reranked_documents = self.rerank(query, documents)
+        documents = await self.get_documents(query)
+        reranked_documents = await self.rerank(query, documents)
 
         for i, document in enumerate(reranked_documents):
             document_information = f"{i + 1}. Filename: {document['meta']['filename']} Text: {document['text']}\n"
@@ -205,7 +209,7 @@ class OpenSearchVectorStoreLangChain:
         user_prompt = f"User query: {query}"
 
         messages = [("system", system_prompt), ("human", user_prompt)]
-        response = llm.invoke(messages)
+        response = await llm.ainvoke(messages)
 
         return response.json()
 
@@ -241,13 +245,13 @@ os_vector_store_langchain = OpenSearchVectorStoreLangChain()
 qdrant_vector_store = QDrantVectorStore()
 
 
-def get_os_vector_store():
+async def get_os_vector_store():
     return os_vector_store
 
 
-def get_os_vector_store_langchain():
+async def get_os_vector_store_langchain():
     return os_vector_store_langchain
 
 
-def get_qdrant_vector_store():
+async def get_qdrant_vector_store():
     return qdrant_vector_store
