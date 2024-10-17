@@ -1,6 +1,5 @@
-from fastapi import FastAPI, WebSocket
+from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import FileResponse
 
 from app.dependencies import create_db_and_tables
 from app.ingest.router import router as ingest_router

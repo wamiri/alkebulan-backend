@@ -1,13 +1,12 @@
 from typing import Annotated
 
 from fastapi import UploadFile
-from fastapi.param_functions import File
 from fastapi.params import Depends
 from fastapi.routing import APIRouter
 
-from app.ingest.dependencies import get_tmp_files_dir
+from app.ingest.dependencies import TmpFilesDir, get_tmp_files_dir
+from app.users.dependencies import get_current_user
 from app.users.models import UserData
-from app.users.utils import get_current_user
 
 router = APIRouter(prefix="/ingest", tags=["Ingest"])
 
@@ -16,9 +15,8 @@ router = APIRouter(prefix="/ingest", tags=["Ingest"])
 async def upload_files(
     files: list[UploadFile],
     current_user: Annotated[UserData, Depends(get_current_user)],
+    tmp_files_dir: Annotated[TmpFilesDir, Depends(get_tmp_files_dir)],
 ):
-    tmp_files_dir = get_tmp_files_dir()
-
     filenames = list()
     for file in files:
         file_data = await file.read()

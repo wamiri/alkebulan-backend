@@ -2,17 +2,10 @@ import asyncio
 
 import boto3
 import openai
-import requests
 from flashrank import Ranker, RerankRequest
-from langchain.chains import create_retrieval_chain
-from langchain.chains.combine_documents import create_stuff_documents_chain
 from langchain_anthropic import ChatAnthropic
-from langchain_community.document_loaders import TextLoader
 from langchain_community.vectorstores import OpenSearchVectorSearch
-from langchain_core.prompts import ChatPromptTemplate
 from langchain_openai import OpenAIEmbeddings
-from langchain_text_splitters import CharacterTextSplitter
-from numpy import gcd
 from openai.types import CreateEmbeddingResponse
 from opensearchpy import AWSV4SignerAuth, OpenSearch, RequestsHttpConnection
 from pydantic import SecretStr

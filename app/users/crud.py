@@ -5,10 +5,10 @@ from app.users.models import User, UserCreate
 
 
 def create_user(db: SessionDep, user_create: UserCreate):
-    created_user = User.model_validate(user_create)
-    db.add(created_user)
+    db_user = User.model_validate(user_create)
+    db.add(db_user)
     db.commit()
-    db.refresh(created_user)
+    db.refresh(db_user)
 
 
 def get_user(db: SessionDep, user_id: int):

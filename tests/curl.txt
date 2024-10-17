@@ -1,0 +1,11 @@
+# Signup
+curl -X POST http://localhost:8000/users/signup -H 'Content-Type: application/json' -d '{"username":"john_doe","password":"password"}'
+
+# Login
+curl -X POST http://localhost:8000/users/login -F username=john_doe -F password=password
+
+# Profile
+curl http://localhost:8000/users/me -H 'Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJqb2huX2RvZSIsImV4cCI6MTcyOTE4MzI1Nn0.7m6mUS7rDU1yxyoeNfnwhL12zL4ATnwXenKhrhgTQPs'
+
+# OpenSearch LangChain
+curl -X POST http://localhost:8000/rag/open-search-langchain -H 'Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJqb2huX2RvZSIsImV4cCI6MTcyOTE4MzI1Nn0.7m6mUS7rDU1yxyoeNfnwhL12zL4ATnwXenKhrhgTQPs' -H 'Content-Type: application/json' -d '{"query":"What is AXA Mansard?"}'

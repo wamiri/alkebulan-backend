@@ -1,5 +1,11 @@
+import uuid
+from typing import TYPE_CHECKING
+
 from pydantic import BaseModel
-from sqlmodel import Field, SQLModel
+from sqlmodel import Field, Relationship, SQLModel
+
+if TYPE_CHECKING:
+    from app.rag.models import Conversation
 
 
 # User
@@ -8,9 +14,11 @@ class UserBase(SQLModel):
 
 
 class User(UserBase, table=True):
-    id: int | None = Field(default=None, primary_key=True)
+    id: uuid.UUID = Field(default_factory=uuid.uuid4, primary_key=True)
     hashed_password: str
     is_active: bool = Field(default=False)
+
+    conversations: list["Conversation"] = Relationship(back_populates="user")
 
 
 class UserForm(UserBase):
@@ -22,7 +30,7 @@ class UserCreate(UserBase):
 
 
 class UserData(UserBase):
-    id: int
+    id: uuid.UUID
     is_active: bool
 
 
