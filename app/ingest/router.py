@@ -6,13 +6,17 @@ from fastapi.params import Depends
 from fastapi.routing import APIRouter
 
 from app.ingest.dependencies import get_tmp_files_dir
-
+from app.users.models import UserData
+from app.users.utils import get_current_user
 
 router = APIRouter(prefix="/ingest", tags=["Ingest"])
 
 
 @router.post("/files/")
-async def upload_files(files: list[UploadFile]):
+async def upload_files(
+    files: list[UploadFile],
+    current_user: Annotated[UserData, Depends(get_current_user)],
+):
     tmp_files_dir = get_tmp_files_dir()
 
     filenames = list()

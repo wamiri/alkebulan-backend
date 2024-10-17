@@ -6,12 +6,11 @@ from fastapi import Depends, HTTPException, status
 from fastapi.security import OAuth2PasswordBearer
 from jwt.exceptions import InvalidTokenError
 from passlib.context import CryptContext
-from sqlalchemy.orm import Session
 
-from app.dependencies import get_db
+from app.dependencies import SessionDep
 from app.users.config import PASSWORD_HASHING_ALGORITHM, PASSWORD_SECRET_KEY
 from app.users.crud import create_user, get_user, get_user_by_username
-from app.users.schemas import TokenDecode, UserCreate, UserData
+from app.users.models import TokenDecode, UserCreate, UserData
 
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/users/login")
@@ -25,15 +24,15 @@ def get_password_hash(password):
     return pwd_context.hash(password)
 
 
-def create_new_user(db: Session, user: UserCreate):
-    return create_user(db, user)
+def create_new_user(db: SessionDep, user_create: UserCreate):
+    create_user(db, user_create)
 
 
-def check_if_user_exists(db: Session, username: str):
+def check_if_user_exists(db: SessionDep, username: str):
     return get_user_by_username(db, username)
 
 
-def authenticate_user(db: Session, username: str, password: str):
+def authenticate_user(db: SessionDep, username: str, password: str):
     user = get_user_by_username(db, username)
     if not user:
         return False
@@ -62,7 +61,7 @@ def create_access_token(data: dict, expires_delta: timedelta | None = None):
 
 async def get_current_user(
     token: Annotated[str, Depends(oauth2_scheme)],
-    db: Session = Depends(get_db),
+    db: SessionDep,
 ):
     credentials_exception = HTTPException(
         status_code=status.HTTP_401_UNAUTHORIZED,
@@ -79,21 +78,12 @@ async def get_current_user(
         username: str = payload.get("sub")
         if username is None:
             raise credentials_exception
-        token_data = TokenDecode(username=username)
+        decoded_token = TokenDecode(username=username)
     except InvalidTokenError:
         raise credentials_exception
 
-    user = get_user_by_username(db, username=token_data.username)
+    user = get_user_by_username(db, username=decoded_token.username)
     if user is None:
         raise credentials_exception
 
     return user
-
-
-async def get_current_active_user(
-    current_user: Annotated[UserData, Depends(get_current_user)],
-):
-    if not current_user.is_active:
-        raise HTTPException(status_code=400, detail="Inactive user")
-
-    return current_user

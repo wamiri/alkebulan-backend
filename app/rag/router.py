@@ -1,6 +1,6 @@
 import json
-
 from typing import Annotated
+
 from fastapi import APIRouter, Depends, WebSocket
 from fastapi.responses import HTMLResponse
 

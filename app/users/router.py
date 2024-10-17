@@ -5,16 +5,15 @@ from fastapi import APIRouter, Depends, FastAPI, HTTPException, status
 from fastapi.security import OAuth2PasswordRequestForm
 from sqlalchemy.orm import Session
 
-from app.dependencies import get_db
-from app.users import models
+from app.dependencies import SessionDep
 from app.users.config import ACCESS_TOKEN_EXPIRE_MINUTES
-from app.users.schemas import TokenEncode, UserCreate, UserData
+from app.users.models import TokenEncode, UserCreate, UserData, UserForm
 from app.users.utils import (
     authenticate_user,
     check_if_user_exists,
     create_access_token,
     create_new_user,
-    get_current_active_user,
+    get_current_user,
     get_password_hash,
 )
 
@@ -22,23 +21,29 @@ router = APIRouter(prefix="/users", tags=["Users"])
 
 
 @router.post("/signup")
-async def signup(form_data: UserCreate, db: Session = Depends(get_db)):
+async def signup(form_data: UserForm, db: SessionDep):
     user = check_if_user_exists(db, username=form_data.username)
-    form_data.password = get_password_hash(form_data.password)
     if user:
         raise HTTPException(
             status_code=status.HTTP_409_CONFLICT,
             detail="User already exists",
         )
 
-    return create_new_user(db, form_data)
+    hashed_password = get_password_hash(form_data.password)
+    user_create = UserCreate(
+        username=form_data.username,
+        hashed_password=hashed_password,
+    )
+
+    create_new_user(db, user_create)
 
 
 @router.post("/login")
 async def login(
     form_data: Annotated[OAuth2PasswordRequestForm, Depends()],
-    db: Session = Depends(get_db),
-) -> TokenEncode:
+    db: SessionDep,
+    response_model=TokenEncode,
+):
     user = authenticate_user(db, form_data.username, form_data.password)
     if not user:
         raise HTTPException(
@@ -56,8 +61,8 @@ async def login(
     return TokenEncode(access_token=access_token, token_type="bearer")
 
 
-@router.get("/profile", response_model=UserData)
+@router.get("/me", response_model=UserData)
 async def get_profile(
-    current_user: Annotated[UserData, Depends(get_current_active_user)],
+    current_user: Annotated[UserData, Depends(get_current_user)],
 ):
     return current_user
