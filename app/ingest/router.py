@@ -19,7 +19,7 @@ router = APIRouter(prefix="/ingest", tags=["Ingest"])
 @router.post("/files/")
 async def upload_files(
     files: list[UploadFile],
-    # current_user: Annotated[UserData, Depends(get_current_user)],
+    current_user: Annotated[UserData, Depends(get_current_user)],
     tmp_files_dir: Annotated[TmpFilesDir, Depends(get_tmp_files_dir)],
     ingester: Annotated[Ingester, Depends(get_ingester)],
 ):
